@@ -82,6 +82,9 @@ func findUsersBy(accountNo string, orgId string, adminOnly string, status string
 		return nil, err
 	}
 
+	log.Info("Foooooooooooo - findUsersBy\n")
+	usersList_str := fmt.Sprintf("%#v\n", usersList)
+	log.Info(fmt.Sprintf("%s\n", usersList_str))
 	out := []User{}
 	for _, user := range usersList {
 		// When adminOnly is true, parameter “status” is ignored
@@ -119,9 +122,12 @@ func findUsersBy(accountNo string, orgId string, adminOnly string, status string
 				continue
 			}
 		}
+		log.Info("here, about to users...\n")
 		if users != nil {
+			log.Info("here, inside users...\n")
 			found := false
 			for _, userCheck := range users.Users {
+				log.Info("iteration ...\n")
 				if userCheck == user.Username {
 					found = true
 				}
@@ -130,12 +136,18 @@ func findUsersBy(accountNo string, orgId string, adminOnly string, status string
 				continue
 			}
 		}
+		log.Info("here, about to append...\n")
 		out = append(out, user)
 
 		if limit > 0 && len(out) >= limit {
+			log.Info("hope this is not...\n")
 			break
 		}
 	}
+	log.Info("here, about to exit...\n")
+	//log.Info("%s\n", fmt.Sprintf("%#v", out))
+	log.Info("%#v\n", out)
+
 	return out, nil
 }
 
