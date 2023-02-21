@@ -59,13 +59,19 @@ objects:
             valueFrom:
               secretKeyRef:
                 name: aws-ses
-                key: access-key
+                key: aws_access_key_id
                 optional: true
           - name: SES_SECRET_KEY
             valueFrom:
               secretKeyRef:
                 name: aws-ses
-                key: secret-key
+                key: aws_secret_access_key
+                optional: true
+          - name: SES_REGION
+            valueFrom:
+              secretKeyRef:
+                name: aws-ses
+                key: aws_region
                 optional: true
           - name: MAILER_MODULE
             value: "${MAILER_MODULE}"

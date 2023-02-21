@@ -13,7 +13,7 @@ import (
 
 func SendEmails(w http.ResponseWriter, r *http.Request) {
 	switch config.Get().MailerModule {
-	case awsModule:
+	case awsModule, printModule:
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			do500(w, "failed to read request body: "+err.Error())
@@ -37,9 +37,16 @@ func SendEmails(w http.ResponseWriter, r *http.Request) {
 		}
 
 		for _, email := range emails.Emails {
+			// creating a copy in order to pass it down into sub-functions
 			email := email
 
-			err := sender.SendEmail(r.Context(), &email)
+			err := mailer.LookupEmailsForUsernames(r.Context(), &email)
+			if err != nil {
+				l.Log.Error(err, "error translating usernames")
+				continue
+			}
+
+			err = sender.SendEmail(r.Context(), &email)
 			if err != nil {
 				l.Log.Error(err, "Error sending email", "email", email)
 			}
