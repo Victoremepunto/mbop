@@ -3,10 +3,10 @@ package store
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 
 	// the pgx driver for the database
 	_ "github.com/golang-migrate/migrate/v4/database/pgx"
+	"github.com/jackc/pgconn"
 	"github.com/pkg/errors"
 	l "github.com/redhatinsights/mbop/internal/logger"
 )
@@ -54,7 +54,15 @@ func (p *postgresStore) Create(r *Registration) (string, error) {
 	var id string
 	err := res.Scan(&id)
 	if err != nil {
-		return "", err
+		var pgErr *pgconn.PgError
+		// constraint violation == 23505
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" {
+				return "", ErrUIDAlreadyExists
+			}
+		} else {
+			return "", err
+		}
 	}
 
 	l.Log.Info("Created registration", "id", id, "org_id", r.OrgID, "uid", r.UID)
@@ -89,7 +97,7 @@ func (p *postgresStore) Delete(orgID, uid string) error {
 	}
 
 	if count != 1 {
-		return fmt.Errorf("no registration found for org_id: %v, uid: %v", orgID, uid)
+		return ErrRegistrationNotFound
 	}
 
 	l.Log.Info("Deleted registration", "orgID", orgID, "uid", uid)

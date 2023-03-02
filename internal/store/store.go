@@ -18,6 +18,7 @@ var mem Store
 var (
 	ErrRegistrationAlreadyExists = errors.New("registration already exists")
 	ErrUIDAlreadyExists          = errors.New("uid already exists")
+	ErrRegistrationNotFound      = errors.New("registration not found")
 )
 
 func SetupStore() error {
