@@ -121,6 +121,8 @@ objects:
             value: ${TOKEN_TTL_DURATION}
           - name: STORE_BACKEND
             value: ${STORE_BACKEND}
+          - name: DISABLE_CATCHALL
+            value: ${DISABLE_CATCHALL}
           image: quay.io/cloudservices/mbop:${IMAGE_TAG}
           imagePullPolicy: IfNotPresent
           name: mbop
@@ -211,3 +213,6 @@ parameters:
 - name: TOKEN_TTL_DURATION
   description: duration string (30s, 5m, 1h, etc) for token TTL
   value: ""
+- name: DISABLE_CATCHALL
+  description: disable fallthrough to catchall handler
+  value: "false"

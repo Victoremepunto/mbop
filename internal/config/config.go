@@ -1,6 +1,9 @@
 package config
 
-import "os"
+import (
+	"os"
+	"strconv"
+)
 
 type MbopConfig struct {
 	MailerModule           string
@@ -16,6 +19,7 @@ type MbopConfig struct {
 	TokenKID               string
 	PrivateKey             string
 	PublicKey              string
+	DisableCatchall        bool
 
 	StoreBackend     string
 	DatabaseHost     string
@@ -32,11 +36,14 @@ func Get() *MbopConfig {
 		return conf
 	}
 
+	disableCatchAll, _ := strconv.ParseBool(fetchWithDefault("DISABLE_CATCHALL", "false"))
+
 	c := &MbopConfig{
-		UsersModule:  fetchWithDefault("USERS_MODULE", ""),
-		JwtModule:    fetchWithDefault("JWT_MODULE", ""),
-		JwkURL:       fetchWithDefault("JWK_URL", ""),
-		MailerModule: fetchWithDefault("MAILER_MODULE", "print"),
+		UsersModule:     fetchWithDefault("USERS_MODULE", ""),
+		JwtModule:       fetchWithDefault("JWT_MODULE", ""),
+		JwkURL:          fetchWithDefault("JWK_URL", ""),
+		MailerModule:    fetchWithDefault("MAILER_MODULE", "print"),
+		DisableCatchall: disableCatchAll,
 
 		DatabaseHost:     fetchWithDefault("DATABASE_HOST", "localhost"),
 		DatabasePort:     fetchWithDefault("DATABASE_PORT", "5432"),
