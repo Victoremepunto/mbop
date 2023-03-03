@@ -14,6 +14,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.0.0-rc.1
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
+	github.com/jackc/pgconn v1.12.0
 	github.com/openshift-online/ocm-sdk-go v0.1.311
 	github.com/pkg/errors v0.9.1
 	github.com/redhatinsights/platform-go-middlewares v0.20.1-0.20230119152702-e3779317d1aa
@@ -46,7 +47,6 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
-	github.com/jackc/pgconn v1.12.0 // indirect
 	github.com/jackc/pgerrcode v0.0.0-20201024163028-a0d42d470451 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

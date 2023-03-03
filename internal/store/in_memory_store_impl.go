@@ -55,5 +55,5 @@ func (m *inMemoryStore) Delete(orgID string, uid string) error {
 		}
 	}
 
-	return errors.New("failed to find registration")
+	return ErrRegistrationNotFound
 }
