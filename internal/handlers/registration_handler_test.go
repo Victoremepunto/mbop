@@ -199,47 +199,6 @@ func (suite *RegistrationTestSuite) TestSuccessfulRegistrationDelete() {
 	suite.Equal(http.StatusNoContent, suite.rec.Result().StatusCode)
 }
 
-func (suite *RegistrationTestSuite) TestNotMatchingCNDelete() {
-	_, err := suite.store.Create(&store.Registration{UID: "abc1234", OrgID: "1234"})
-	suite.Nil(err)
-
-	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("uid", "abc1234")
-
-	req := httptest.NewRequest(http.MethodDelete, "http://foobar/registrations/{uid}", nil)
-	req = req.WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
-		User:  identity.User{OrgAdmin: true},
-		OrgID: "1234",
-	}}))
-	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
-	req.Header.Set("x-rh-certauth-cn", "/CN=abc12345")
-
-	RegistrationDeleteHandler(suite.rec, req)
-
-	//nolint:bodyclose
-	suite.Equal(http.StatusBadRequest, suite.rec.Result().StatusCode)
-}
-
-func (suite *RegistrationTestSuite) TestNoCNDelete() {
-	_, err := suite.store.Create(&store.Registration{UID: "abc1234", OrgID: "1234"})
-	suite.Nil(err)
-
-	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("uid", "abc1234")
-
-	req := httptest.NewRequest(http.MethodDelete, "http://foobar/registrations/{uid}", nil)
-	req = req.WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
-		User:  identity.User{OrgAdmin: true},
-		OrgID: "1234",
-	}}))
-	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
-
-	RegistrationDeleteHandler(suite.rec, req)
-
-	//nolint:bodyclose
-	suite.Equal(http.StatusBadRequest, suite.rec.Result().StatusCode)
-}
-
 func (suite *RegistrationTestSuite) TestNotOrgAdminDelete() {
 	_, err := suite.store.Create(&store.Registration{UID: "abc1234", OrgID: "1234"})
 	suite.Nil(err)

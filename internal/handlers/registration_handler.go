@@ -82,18 +82,6 @@ func RegistrationDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		do400(w, "invalid uid passed in path")
 	}
 
-	gatewayCN := r.Header.Get("x-rh-certauth-cn")
-	parts := strings.Split(gatewayCN, "=")
-	if gatewayCN == "" || len(parts) < 2 {
-		do400(w, "[x-rh-certauth-cn] header not present")
-		return
-	}
-
-	if parts[1] != uid {
-		do400(w, "x-rh-certauth-cn does not match uid")
-		return
-	}
-
 	id := identity.Get(r.Context())
 	if !id.Identity.User.OrgAdmin {
 		doError(w, "user must be org admin to register satellite", 403)
