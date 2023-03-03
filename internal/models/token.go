@@ -26,15 +26,16 @@ func (t Token) Create(ttl time.Duration, xrhid identity.Identity) (string, error
 	claims["exp"] = now.Add(ttl).Unix()
 	claims["iat"] = now.Unix()
 	claims["nbf"] = now.Unix()
-	claims["kid"] = config.Get().TokenKID
 	claims["org_id"] = xrhid.OrgID
 	claims["username"] = xrhid.User.Username
 	claims["is_org_admin"] = xrhid.User.OrgAdmin
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(key)
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	token.Header["kid"] = config.Get().TokenKID
+	tokenStr, err := token.SignedString(key)
 	if err != nil {
 		return "", fmt.Errorf("Failed to sign token: %w", err)
 	}
 
-	return token, nil
+	return tokenStr, nil
 }
