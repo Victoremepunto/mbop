@@ -157,7 +157,7 @@ func responseToUsers(response *v1.AccountsListResponse) models.Users {
 			LastName:      items[i].LastName(),
 			AddressString: items[i].HREF(),
 			IsActive:      true,
-			IsInternal:    true,
+			IsInternal:    false,
 			Locale:        "en_US",
 			OrgID:         items[i].Organization().ID(),
 			DisplayName:   items[i].Organization().Name(),
