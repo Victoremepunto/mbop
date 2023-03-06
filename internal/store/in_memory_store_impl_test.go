@@ -40,6 +40,18 @@ func (suite *InMemoryStoreTestSuite) TestFindNotThere() {
 	suite.Error(err)
 }
 
+func (suite *InMemoryStoreTestSuite) TestFindByUID() {
+	_, err := suite.store.Create(&Registration{OrgID: "1234", UID: "1234"})
+	suite.Nil(err)
+	_, err = suite.store.FindByUID("1234")
+	suite.Nil(err)
+}
+
+func (suite *InMemoryStoreTestSuite) TestFindByUIDNotThere() {
+	_, err := suite.store.FindByUID("1234")
+	suite.Error(err)
+}
+
 func (suite *InMemoryStoreTestSuite) TestAll() {
 	_, err := suite.store.Create(&Registration{OrgID: "1234", UID: "1234"})
 	suite.Nil(err)

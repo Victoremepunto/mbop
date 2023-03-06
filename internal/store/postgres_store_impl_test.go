@@ -83,6 +83,22 @@ func (suite *TestSuite) TestFindOne() {
 	suite.Equal(found.OrgID, "1234")
 }
 
+func (suite *TestSuite) TestFindByUID() {
+	r := Registration{OrgID: "1234", UID: "1234", Extra: map[string]interface{}{"thing": true}}
+	_, err := suite.store.Create(&r)
+	suite.Nil(err, "failed to insert: %v", err)
+
+	found, err := suite.store.FindByUID("1234")
+	suite.Nil(err, "failed to find one registration")
+	suite.Equal(found.UID, "1234")
+	suite.Equal(found.OrgID, "1234")
+}
+
+func (suite *TestSuite) TestFindByUIDNotThere() {
+	_, err := suite.store.FindByUID("1234")
+	suite.Error(err, "failed to not find one registration")
+}
+
 func (suite *TestSuite) TestFindOneNotThere() {
 	_, err := suite.store.Find("1234", "1234")
 	suite.Error(err, "failed to not find one registration")

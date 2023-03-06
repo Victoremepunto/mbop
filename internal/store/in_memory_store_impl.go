@@ -1,7 +1,5 @@
 package store
 
-import "errors"
-
 type inMemoryStore struct {
 	db []Registration
 }
@@ -17,7 +15,17 @@ func (m *inMemoryStore) Find(orgID string, uid string) (*Registration, error) {
 		}
 	}
 
-	return nil, errors.New("failed to find registration")
+	return nil, ErrRegistrationNotFound
+}
+
+func (m *inMemoryStore) FindByUID(uid string) (*Registration, error) {
+	for _, r := range m.db {
+		if r.UID == uid {
+			return &r, nil
+		}
+	}
+
+	return nil, ErrRegistrationNotFound
 }
 
 func (m *inMemoryStore) Create(r *Registration) (string, error) {

@@ -39,6 +39,7 @@ func main() {
 	r.Post("/v1/sendEmails", handlers.SendEmails)
 	r.Get("/v3/accounts/{orgID}/users", handlers.AccountsV3UsersHandler)
 	r.Post("/v3/accounts/{orgID}/usersBy", handlers.AccountsV3UsersByHandler)
+	r.Get("/v1/auth", handlers.AuthV1Handler)
 
 	// all the handlers that need xrhid
 	r.With(identity.EnforceIdentity).Group(func(r chi.Router) {
