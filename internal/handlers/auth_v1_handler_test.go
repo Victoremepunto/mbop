@@ -40,9 +40,10 @@ func (suite *AuthV1TestSuite) AfterTest(_, _ string) {
 
 func (suite *AuthV1TestSuite) TestV1AuthNotFound() {
 	req := httptest.NewRequest(http.MethodGet, "http://foobar/v1/auth", nil)
-	req.Header.Set(CERT_HEADER, "/CN=1234")
+	req.Header.Set(CertHeader, "/CN=1234")
 	AuthV1Handler(suite.rec, req)
 
+	//nolint:bodyclose
 	suite.Equal(http.StatusNotFound, suite.rec.Result().StatusCode)
 }
 
@@ -51,9 +52,10 @@ func (suite *AuthV1TestSuite) TestV1AuthSuccess() {
 	suite.Nil(err)
 
 	req := httptest.NewRequest(http.MethodGet, "http://foobar/v1/auth", nil)
-	req.Header.Set(CERT_HEADER, "/CN=1234")
+	req.Header.Set(CertHeader, "/CN=1234")
 	AuthV1Handler(suite.rec, req)
 
+	//nolint:bodyclose
 	suite.Equal(http.StatusOK, suite.rec.Result().StatusCode)
 
 	body, err := io.ReadAll(suite.rec.Body)

@@ -40,7 +40,7 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gatewayCN, err := getCertCN(r.Header.Get(CERT_HEADER))
+	gatewayCN, err := getCertCN(r.Header.Get(CertHeader))
 	if err != nil {
 		do400(w, err.Error())
 		return

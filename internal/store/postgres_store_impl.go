@@ -125,9 +125,8 @@ func scanRegistration(row scanner) (*Registration, error) {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrRegistrationNotFound
-		} else {
-			return nil, err
 		}
+		return nil, err
 	}
 
 	var e map[string]any

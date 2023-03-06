@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-const CERT_HEADER = "x-rh-certauth-cn"
+const CertHeader = "x-rh-certauth-cn"
 
 var cnMatcher = regexp.MustCompile(`/CN=(.*)$`)
 
