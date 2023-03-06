@@ -43,6 +43,11 @@ func (p *postgresStore) Find(orgID, uid string) (*Registration, error) {
 	return scanRegistration(rows)
 }
 
+func (p *postgresStore) FindByUID(uid string) (*Registration, error) {
+	rows := p.db.QueryRow(`select id, org_id, uid, extra from registrations where uid = $1 limit 1`, uid)
+	return scanRegistration(rows)
+}
+
 func (p *postgresStore) Create(r *Registration) (string, error) {
 	res := p.db.QueryRow(
 		`insert into registrations (org_id, uid, extra) values ($1, $2, $3) returning id`,

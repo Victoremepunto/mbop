@@ -20,6 +20,16 @@ func (m *inMemoryStore) Find(orgID string, uid string) (*Registration, error) {
 	return nil, errors.New("failed to find registration")
 }
 
+func (m *inMemoryStore) FindByUID(uid string) (*Registration, error) {
+	for _, r := range m.db {
+		if r.UID == uid {
+			return &r, nil
+		}
+	}
+
+	return nil, errors.New("failed to find registration")
+}
+
 func (m *inMemoryStore) Create(r *Registration) (string, error) {
 	x, _ := m.Find(r.OrgID, r.UID)
 	if x != nil {
