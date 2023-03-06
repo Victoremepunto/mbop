@@ -42,7 +42,7 @@ func AuthV1Handler(w http.ResponseWriter, r *http.Request) {
 	reg, err := db.FindByUID(gatewayCN)
 	if err != nil {
 		if errors.Is(err, store.ErrRegistrationNotFound) {
-			do404(w, err.Error())
+			doError(w, err.Error(), 401)
 		} else {
 			do500(w, "failed to search for registration: "+err.Error())
 		}

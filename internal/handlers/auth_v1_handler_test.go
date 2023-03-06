@@ -44,7 +44,7 @@ func (suite *AuthV1TestSuite) TestV1AuthNotFound() {
 	AuthV1Handler(suite.rec, req)
 
 	//nolint:bodyclose
-	suite.Equal(http.StatusNotFound, suite.rec.Result().StatusCode)
+	suite.Equal(http.StatusUnauthorized, suite.rec.Result().StatusCode)
 }
 
 func (suite *AuthV1TestSuite) TestV1AuthSuccess() {
