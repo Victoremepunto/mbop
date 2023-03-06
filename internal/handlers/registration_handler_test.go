@@ -178,6 +178,24 @@ func (suite *RegistrationTestSuite) TestSuccessfulRegistrationCreate() {
 	suite.Equal(http.StatusCreated, suite.rec.Result().StatusCode)
 }
 
+// This is mostly just to test the "other" format of CN headers that the gateway
+// passes through. Currently it's the case that the CN is the last field in the
+// header, but that may not always be the case.
+func (suite *RegistrationTestSuite) TestSuccessfulRegistrationCreateOtherUIDFormat() {
+	body := []byte(`{"uid": "bar"}`)
+	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
+		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
+			User:  identity.User{OrgAdmin: true},
+			OrgID: "1234",
+		}}))
+	req.Header.Set("x-rh-certauth-cn", "O=foo, /CN=bar")
+
+	RegistrationCreateHandler(suite.rec, req)
+
+	//nolint:bodyclose
+	suite.Equal(http.StatusCreated, suite.rec.Result().StatusCode)
+}
+
 func (suite *RegistrationTestSuite) TestSuccessfulRegistrationDelete() {
 	_, err := suite.store.Create(&store.Registration{UID: "abc1234", OrgID: "1234"})
 	suite.Nil(err)
