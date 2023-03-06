@@ -123,7 +123,11 @@ func scanRegistration(row scanner) (*Registration, error) {
 	)
 	err := row.Scan(&id, &orgID, &uid, &extra)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrRegistrationNotFound
+		} else {
+			return nil, err
+		}
 	}
 
 	var e map[string]any
