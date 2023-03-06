@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"regexp"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/redhatinsights/mbop/internal/store"
@@ -15,8 +14,6 @@ import (
 type registationCreateRequest struct {
 	UID *string `json:"uid,omitempty"`
 }
-
-var cnMatcher = regexp.MustCompile(`/CN=(.*)$`)
 
 func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
@@ -43,15 +40,14 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gatewayCN := r.Header.Get("x-rh-certauth-cn")
-	if !cnMatcher.MatchString(gatewayCN) {
-		doError(w, "[x-rh-certauth-cn] header not present", 400)
+	gatewayCN, err := getCertCN(r.Header.Get(CERT_HEADER))
+	if err != nil {
+		do400(w, err.Error())
 		return
 	}
 
-	parts := cnMatcher.FindAllStringSubmatch(gatewayCN, 1)
-	if parts[0][1] != *body.UID {
-		doError(w, "x-rh-certauth-cn does not match uid", 400)
+	if gatewayCN != *body.UID {
+		do400(w, "x-rh-certauth-cn does not match uid")
 		return
 	}
 
