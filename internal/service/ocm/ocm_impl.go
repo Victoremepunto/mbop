@@ -144,6 +144,16 @@ func (ocm *SDK) CloseSdkConnection() {
 	ocm.client.Close()
 }
 
+func getIsInternal(user *v1.Account) bool {
+	labels := user.Labels()
+	for _, l := range labels {
+		if l.Value() == config.Get().IsInternalLabel {
+			return true
+		}
+	}
+	return false
+}
+
 func responseToUsers(response *v1.AccountsListResponse) models.Users {
 	users := models.Users{}
 	items := response.Items().Slice()
@@ -157,7 +167,7 @@ func responseToUsers(response *v1.AccountsListResponse) models.Users {
 			LastName:      items[i].LastName(),
 			AddressString: items[i].HREF(),
 			IsActive:      true,
-			IsInternal:    false,
+			IsInternal:    getIsInternal(items[i]),
 			Locale:        "en_US",
 			OrgID:         items[i].Organization().ID(),
 			DisplayName:   items[i].Organization().Name(),

@@ -20,6 +20,7 @@ type MbopConfig struct {
 	PrivateKey             string
 	PublicKey              string
 	DisableCatchall        bool
+	IsInternalLabel        string
 
 	StoreBackend     string
 	DatabaseHost     string
@@ -61,6 +62,7 @@ func Get() *MbopConfig {
 		TokenKID:               fetchWithDefault("TOKEN_KID", ""),
 		PrivateKey:             fetchWithDefault("TOKEN_PRIVATE_KEY", ""),
 		PublicKey:              fetchWithDefault("TOKEN_PUBLIC_KEY", ""),
+		IsInternalLabel:        fetchWithDefault("IS_INTERNAL_LABEL", ""),
 	}
 
 	conf = c
