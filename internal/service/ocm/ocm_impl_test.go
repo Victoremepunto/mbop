@@ -34,6 +34,13 @@ func (suite *TestSuite) TestGetIsInternalMatch() {
 	assert.Equal(suite.T(), true, getIsInternal(acct))
 }
 
+func (suite *TestSuite) TestGetIsInternaEmptyLabels() {
+	os.Setenv("IS_INTERNAL_LABEL", "foo")
+	acctB := &v1.AccountBuilder{}
+	acct, _ := acctB.Build()
+	assert.Equal(suite.T(), false, getIsInternal(acct))
+}
+
 func (suite *TestSuite) TestGetIsInternalNoMatch() {
 	os.Setenv("IS_INTERNAL_LABEL", "bar")
 	l := &v1.LabelBuilder{}
