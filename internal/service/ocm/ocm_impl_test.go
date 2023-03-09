@@ -13,11 +13,11 @@ import (
 
 type TestSuite struct {
 	suite.Suite
-	is_internal_label string
+	IsInternalLabel string
 }
 
 func (suite *TestSuite) SetupSuite() {
-	suite.is_internal_label = "foo"
+	suite.IsInternalLabel = "foo"
 }
 
 func (suite *TestSuite) SetupTest() {
@@ -27,7 +27,7 @@ func (suite *TestSuite) SetupTest() {
 func (suite *TestSuite) TestGetIsInternalMatch() {
 	os.Setenv("IS_INTERNAL_LABEL", "foo")
 	l := &v1.LabelBuilder{}
-	l.Value(suite.is_internal_label)
+	l.Value(suite.IsInternalLabel)
 	acctB := &v1.AccountBuilder{}
 	acctB.Labels(l)
 	acct, _ := acctB.Build()
@@ -44,7 +44,7 @@ func (suite *TestSuite) TestGetIsInternaEmptyLabels() {
 func (suite *TestSuite) TestGetIsInternalNoMatch() {
 	os.Setenv("IS_INTERNAL_LABEL", "bar")
 	l := &v1.LabelBuilder{}
-	l.Value(suite.is_internal_label)
+	l.Value(suite.IsInternalLabel)
 	acctB := &v1.AccountBuilder{}
 	acctB.Labels(l)
 	acct, _ := acctB.Build()
