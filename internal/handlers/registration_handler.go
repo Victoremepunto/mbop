@@ -16,6 +16,24 @@ type registationCreateRequest struct {
 	DisplayName *string `json:"display_name,omitempty"`
 }
 
+func RegistrationListHandler(w http.ResponseWriter, r *http.Request) {
+	id := identity.Get(r.Context())
+	if !id.Identity.User.OrgAdmin {
+		doError(w, "user must be org admin to list registrations", 403)
+		return
+	}
+
+	db := store.GetStore()
+
+	regs, err := db.All(id.Identity.OrgID)
+	if err != nil {
+		do500(w, err.Error())
+		return
+	}
+
+	sendJSON(w, regs)
+}
+
 func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {

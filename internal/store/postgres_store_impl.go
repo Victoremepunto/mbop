@@ -15,8 +15,8 @@ type postgresStore struct {
 	db *sql.DB
 }
 
-func (p *postgresStore) All() ([]Registration, error) {
-	rows, err := p.db.Query(`select id, org_id, uid, display_name, extra from registrations`)
+func (p *postgresStore) All(orgID string) ([]Registration, error) {
+	rows, err := p.db.Query(`select id, org_id, uid, display_name, extra from registrations where org_id = $1`, orgID)
 	if err != nil {
 		return nil, err
 	}

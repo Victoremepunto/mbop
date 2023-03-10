@@ -43,6 +43,7 @@ func main() {
 
 	// all the handlers that need xrhid
 	r.With(identity.EnforceIdentity).Group(func(r chi.Router) {
+		r.Get("/v1/registrations", handlers.RegistrationListHandler)
 		r.Post("/v1/registrations", handlers.RegistrationCreateHandler)
 		r.Delete("/v1/registrations/{uid}", handlers.RegistrationDeleteHandler)
 		r.Get("/v1/registrations/token", handlers.TokenHandler)

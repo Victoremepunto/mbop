@@ -287,3 +287,17 @@ func statusAndBodyFromReq(suite *RegistrationTestSuite) (int, string) {
 	body, _ := io.ReadAll(rsp.Body)
 	return rsp.StatusCode, string(body)
 }
+
+func (suite *RegistrationTestSuite) TestRegistrationList() {
+	req := httptest.NewRequest(http.MethodGet, "http://foobar/registrations", nil)
+	req = req.WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
+		User:  identity.User{OrgAdmin: true},
+		OrgID: "1234",
+	}}))
+
+	RegistrationListHandler(suite.rec, req)
+
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusNotFound, status)
+	suite.Equal("{\"message\":\"registration not found\"}", rspBody)
+}

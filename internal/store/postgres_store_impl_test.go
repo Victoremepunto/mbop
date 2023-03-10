@@ -119,13 +119,13 @@ func (suite *TestSuite) TestFindAll() {
 	_, err := suite.store.Create(&r)
 	suite.Nil(err, "failed to insert")
 
-	r.OrgID = "2345"
+	r.OrgID = "1234"
 	r.UID = "2345"
 	r.DisplayName = "two"
 	_, err = suite.store.Create(&r)
 	suite.Nil(err, "failed to insert")
 
-	out, err := suite.store.All()
+	out, err := suite.store.All("1234")
 	suite.Nil(err, "failed to list all registrations")
 	suite.Equal(len(out), 2)
 }

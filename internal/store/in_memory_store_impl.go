@@ -4,8 +4,14 @@ type inMemoryStore struct {
 	db []Registration
 }
 
-func (m *inMemoryStore) All() ([]Registration, error) {
-	return m.db, nil
+func (m *inMemoryStore) All(orgID string) ([]Registration, error) {
+	out := make([]Registration, 0)
+	for i := range m.db {
+		if m.db[i].OrgID == orgID {
+			out = append(out, m.db[i])
+		}
+	}
+	return out, nil
 }
 
 func (m *inMemoryStore) Find(orgID string, uid string) (*Registration, error) {

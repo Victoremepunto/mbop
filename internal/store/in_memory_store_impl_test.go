@@ -58,10 +58,10 @@ func (suite *InMemoryStoreTestSuite) TestAll() {
 	_, err = suite.store.Create(&Registration{OrgID: "2345", UID: "2345", DisplayName: "two"})
 	suite.Nil(err)
 
-	r, err := suite.store.All()
+	r, err := suite.store.All("1234")
 	suite.Nil(err)
 
-	suite.Equal(len(r), 2)
+	suite.Equal(len(r), 1)
 }
 
 func (suite *InMemoryStoreTestSuite) TestDelete() {
