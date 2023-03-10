@@ -58,6 +58,16 @@ func (suite *TestSuite) TestCreateWithExtra() {
 	suite.NotEqual("", id, "something funky with returning the id")
 }
 
+func (suite *TestSuite) TestCreateDuplicateDisplayName() {
+	r := Registration{OrgID: "1234", UID: "1234", DisplayName: "dupe"}
+	_, err := suite.store.Create(&r)
+	suite.Nil(err, "failed to insert")
+
+	r2 := Registration{OrgID: "2345", UID: "2345", DisplayName: "dupe"}
+	_, err = suite.store.Create(&r2)
+	suite.Error(err, "inserted successfully even when it shouldn't have")
+}
+
 func (suite *TestSuite) TestDelete() {
 	r := Registration{OrgID: "1234", UID: "1234", Extra: map[string]interface{}{"thing": true}}
 	_, err := suite.store.Create(&r)
@@ -105,12 +115,13 @@ func (suite *TestSuite) TestFindOneNotThere() {
 }
 
 func (suite *TestSuite) TestFindAll() {
-	r := Registration{OrgID: "1234", UID: "1234"}
+	r := Registration{OrgID: "1234", UID: "1234", DisplayName: "one"}
 	_, err := suite.store.Create(&r)
 	suite.Nil(err, "failed to insert")
 
 	r.OrgID = "2345"
 	r.UID = "2345"
+	r.DisplayName = "two"
 	_, err = suite.store.Create(&r)
 	suite.Nil(err, "failed to insert")
 

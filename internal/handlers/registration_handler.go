@@ -63,7 +63,7 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 		UID:   *body.UID,
 	})
 	if err != nil {
-		if errors.Is(err, store.ErrUIDAlreadyExists) {
+		if errors.Is(err, store.ErrRegistrationAlreadyExists) {
 			doError(w, "existing registration found", 409)
 		} else {
 			do500(w, "failed to create registration: "+err.Error())
