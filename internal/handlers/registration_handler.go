@@ -98,5 +98,5 @@ func RegistrationDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sendJSONWithStatusCode(w, newResponse("Successfully de-registered"), 204)
+	w.WriteHeader(204)
 }

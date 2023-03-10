@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -51,8 +52,9 @@ func (suite *RegistrationTestSuite) TestEmptyBodyCreate() {
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{}))
 	RegistrationCreateHandler(suite.rec, req)
 
-	//nolint:bodyclose
-	suite.Equal(http.StatusBadRequest, suite.rec.Result().StatusCode)
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusBadRequest, status)
+	suite.Equal("{\"message\":\"required parameter [uid] not found in body\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestNoBodyCreate() {
@@ -61,8 +63,9 @@ func (suite *RegistrationTestSuite) TestNoBodyCreate() {
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{}))
 	RegistrationCreateHandler(suite.rec, req)
 
-	//nolint:bodyclose
-	suite.Equal(http.StatusBadRequest, suite.rec.Result().StatusCode)
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusBadRequest, status)
+	suite.Equal("{\"message\":\"failed to unmarshal body: unexpected end of JSON input\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestBadBodyCreate() {
@@ -71,8 +74,9 @@ func (suite *RegistrationTestSuite) TestBadBodyCreate() {
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{}))
 	RegistrationCreateHandler(suite.rec, req)
 
-	//nolint:bodyclose
-	suite.Equal(http.StatusBadRequest, suite.rec.Result().StatusCode)
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusBadRequest, status)
+	suite.Equal("{\"message\":\"failed to unmarshal body: unexpected end of JSON input\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestNotOrgAdminCreate() {
@@ -88,8 +92,9 @@ func (suite *RegistrationTestSuite) TestNotOrgAdminCreate() {
 
 	RegistrationCreateHandler(suite.rec, req)
 
-	//nolint:bodyclose
-	suite.Equal(http.StatusForbidden, suite.rec.Result().StatusCode)
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusForbidden, status)
+	suite.Equal("{\"message\":\"user must be org admin to register satellite\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestNoGatewayCNCreate() {
@@ -105,8 +110,9 @@ func (suite *RegistrationTestSuite) TestNoGatewayCNCreate() {
 
 	RegistrationCreateHandler(suite.rec, req)
 
-	//nolint:bodyclose
-	suite.Equal(http.StatusBadRequest, suite.rec.Result().StatusCode)
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusBadRequest, status)
+	suite.Equal("{\"message\":\"[x-rh-certauth-cn] header not present\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestNotMatchingCNCreate() {
@@ -123,8 +129,9 @@ func (suite *RegistrationTestSuite) TestNotMatchingCNCreate() {
 
 	RegistrationCreateHandler(suite.rec, req)
 
-	//nolint:bodyclose
-	suite.Equal(http.StatusForbidden, suite.rec.Result().StatusCode)
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusForbidden, status)
+	suite.Equal("{\"message\":\"user must be org admin to register satellite\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestExistingRegistrationCreate() {
@@ -141,8 +148,9 @@ func (suite *RegistrationTestSuite) TestExistingRegistrationCreate() {
 
 	RegistrationCreateHandler(suite.rec, req)
 
-	//nolint:bodyclose
-	suite.Equal(http.StatusConflict, suite.rec.Result().StatusCode)
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusConflict, status)
+	suite.Equal("{\"message\":\"existing registration found\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestExistingUidCreate() {
@@ -159,8 +167,9 @@ func (suite *RegistrationTestSuite) TestExistingUidCreate() {
 
 	RegistrationCreateHandler(suite.rec, req)
 
-	//nolint:bodyclose
-	suite.Equal(http.StatusConflict, suite.rec.Result().StatusCode)
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusConflict, status)
+	suite.Equal("{\"message\":\"existing registration found\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestSuccessfulRegistrationCreate() {
@@ -174,8 +183,9 @@ func (suite *RegistrationTestSuite) TestSuccessfulRegistrationCreate() {
 
 	RegistrationCreateHandler(suite.rec, req)
 
-	//nolint:bodyclose
-	suite.Equal(http.StatusCreated, suite.rec.Result().StatusCode)
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusCreated, status)
+	suite.Equal("{\"message\":\"Successfully registered\"}", rspBody)
 }
 
 // This is mostly just to test the "other" format of CN headers that the gateway
@@ -192,8 +202,9 @@ func (suite *RegistrationTestSuite) TestSuccessfulRegistrationCreateOtherUIDForm
 
 	RegistrationCreateHandler(suite.rec, req)
 
-	//nolint:bodyclose
-	suite.Equal(http.StatusCreated, suite.rec.Result().StatusCode)
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusCreated, status)
+	suite.Equal("{\"message\":\"Successfully registered\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestSuccessfulRegistrationDelete() {
@@ -213,8 +224,9 @@ func (suite *RegistrationTestSuite) TestSuccessfulRegistrationDelete() {
 
 	RegistrationDeleteHandler(suite.rec, req)
 
-	//nolint:bodyclose
-	suite.Equal(http.StatusNoContent, suite.rec.Result().StatusCode)
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusNoContent, status)
+	suite.Equal("", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestNotOrgAdminDelete() {
@@ -234,8 +246,9 @@ func (suite *RegistrationTestSuite) TestNotOrgAdminDelete() {
 
 	RegistrationDeleteHandler(suite.rec, req)
 
-	//nolint:bodyclose
-	suite.Equal(http.StatusForbidden, suite.rec.Result().StatusCode)
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusForbidden, status)
+	suite.Equal("{\"message\":\"user must be org admin to register satellite\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestRegistrationNotFoundDelete() {
@@ -252,6 +265,14 @@ func (suite *RegistrationTestSuite) TestRegistrationNotFoundDelete() {
 
 	RegistrationDeleteHandler(suite.rec, req)
 
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusNotFound, status)
+	suite.Equal("{\"message\":\"registration not found\"}", rspBody)
+}
+
+func statusAndBodyFromReq(suite *RegistrationTestSuite) (int, string) {
 	//nolint:bodyclose
-	suite.Equal(http.StatusNotFound, suite.rec.Result().StatusCode)
+	rsp := suite.rec.Result()
+	body, _ := io.ReadAll(rsp.Body)
+	return rsp.StatusCode, string(body)
 }
