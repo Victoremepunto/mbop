@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -214,7 +215,9 @@ func (suite *RegistrationTestSuite) TestSuccessfulRegistrationDelete() {
 	RegistrationDeleteHandler(suite.rec, req)
 
 	//nolint:bodyclose
-	suite.Equal(http.StatusNoContent, suite.rec.Result().StatusCode)
+	status, body := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusNoContent, status)
+	suite.Equal("", body)
 }
 
 func (suite *RegistrationTestSuite) TestNotOrgAdminDelete() {
@@ -235,7 +238,9 @@ func (suite *RegistrationTestSuite) TestNotOrgAdminDelete() {
 	RegistrationDeleteHandler(suite.rec, req)
 
 	//nolint:bodyclose
-	suite.Equal(http.StatusForbidden, suite.rec.Result().StatusCode)
+	status, body := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusForbidden, status)
+	suite.Equal("{\"message\":\"user must be org admin to register satellite\"}", body)
 }
 
 func (suite *RegistrationTestSuite) TestRegistrationNotFoundDelete() {
@@ -253,5 +258,13 @@ func (suite *RegistrationTestSuite) TestRegistrationNotFoundDelete() {
 	RegistrationDeleteHandler(suite.rec, req)
 
 	//nolint:bodyclose
-	suite.Equal(http.StatusNotFound, suite.rec.Result().StatusCode)
+	status, body := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusNotFound, status)
+	suite.Equal("{\"message\":\"registration not found\"}", body)
+}
+
+func statusAndBodyFromReq(suite *RegistrationTestSuite) (int, string) {
+	rsp := suite.rec.Result()
+	body, _ := io.ReadAll(rsp.Body)
+	return rsp.StatusCode, string(body)
 }
