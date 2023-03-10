@@ -68,6 +68,17 @@ func (suite *RegistrationTestSuite) TestNoBodyCreate() {
 	suite.Equal("{\"message\":\"failed to unmarshal body: unexpected end of JSON input\"}", rspBody)
 }
 
+func (suite *RegistrationTestSuite) TestNoDisplayNameCreate() {
+	body := []byte(`{"uid": "1234"}`)
+	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
+		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{}))
+	RegistrationCreateHandler(suite.rec, req)
+
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusBadRequest, status)
+	suite.Equal("{\"message\":\"required parameter [display_name] not found in body\"}", rspBody)
+}
+
 func (suite *RegistrationTestSuite) TestBadBodyCreate() {
 	body := []byte(`{`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
@@ -83,7 +94,7 @@ func (suite *RegistrationTestSuite) TestNotOrgAdminCreate() {
 	_, err := suite.store.Create(&store.Registration{UID: "abc1234"})
 	suite.Nil(err)
 
-	body := []byte(`{"uid": "abc1234"}`)
+	body := []byte(`{"uid": "abc1234", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
 			User:  identity.User{OrgAdmin: false},
@@ -101,7 +112,7 @@ func (suite *RegistrationTestSuite) TestNoGatewayCNCreate() {
 	_, err := suite.store.Create(&store.Registration{UID: "abc1234"})
 	suite.Nil(err)
 
-	body := []byte(`{"uid": "abc1234"}`)
+	body := []byte(`{"uid": "abc1234", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
 			User:  identity.User{OrgAdmin: true},
@@ -119,7 +130,7 @@ func (suite *RegistrationTestSuite) TestNotMatchingCNCreate() {
 	_, err := suite.store.Create(&store.Registration{UID: "abc1234"})
 	suite.Nil(err)
 
-	body := []byte(`{"uid": "abc1234"}`)
+	body := []byte(`{"uid": "abc1234", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
 			User:  identity.User{OrgAdmin: false},
@@ -138,7 +149,7 @@ func (suite *RegistrationTestSuite) TestExistingRegistrationCreate() {
 	_, err := suite.store.Create(&store.Registration{UID: "abc1234", OrgID: "1234"})
 	suite.Nil(err)
 
-	body := []byte(`{"uid": "abc1234"}`)
+	body := []byte(`{"uid": "abc1234", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
 			User:  identity.User{OrgAdmin: true},
@@ -157,7 +168,7 @@ func (suite *RegistrationTestSuite) TestExistingUidCreate() {
 	_, err := suite.store.Create(&store.Registration{UID: "abc1234", OrgID: "2345"})
 	suite.Nil(err)
 
-	body := []byte(`{"uid": "abc1234"}`)
+	body := []byte(`{"uid": "abc1234", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
 			User:  identity.User{OrgAdmin: true},
@@ -173,7 +184,7 @@ func (suite *RegistrationTestSuite) TestExistingUidCreate() {
 }
 
 func (suite *RegistrationTestSuite) TestSuccessfulRegistrationCreate() {
-	body := []byte(`{"uid": "abc1234"}`)
+	body := []byte(`{"uid": "abc1234", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
 			User:  identity.User{OrgAdmin: true},
@@ -192,7 +203,7 @@ func (suite *RegistrationTestSuite) TestSuccessfulRegistrationCreate() {
 // passes through. Currently it's the case that the CN is the last field in the
 // header, but that may not always be the case.
 func (suite *RegistrationTestSuite) TestSuccessfulRegistrationCreateOtherUIDFormat() {
-	body := []byte(`{"uid": "bar"}`)
+	body := []byte(`{"uid": "bar", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
 			User:  identity.User{OrgAdmin: true},

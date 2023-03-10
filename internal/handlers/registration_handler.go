@@ -12,7 +12,8 @@ import (
 )
 
 type registationCreateRequest struct {
-	UID *string `json:"uid,omitempty"`
+	UID         *string `json:"uid,omitempty"`
+	DisplayName *string `json:"display_name,omitempty"`
 }
 
 func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
@@ -31,6 +32,11 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	if body.UID == nil || *body.UID == "" {
 		do400(w, "required parameter [uid] not found in body")
+		return
+	}
+
+	if body.DisplayName == nil || *body.DisplayName == "" {
+		do400(w, "required parameter [display_name] not found in body")
 		return
 	}
 
@@ -59,8 +65,9 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = db.Create(&store.Registration{
-		OrgID: id.Identity.OrgID,
-		UID:   *body.UID,
+		OrgID:       id.Identity.OrgID,
+		UID:         *body.UID,
+		DisplayName: *body.DisplayName,
 	})
 	if err != nil {
 		if errors.Is(err, store.ErrRegistrationAlreadyExists) {
