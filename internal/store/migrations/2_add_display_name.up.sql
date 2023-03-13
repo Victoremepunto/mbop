@@ -15,5 +15,7 @@ $$
     end
 $$;
 
-create unique index display_name_unique
-    on registrations (display_name);
+-- unique across multiple tenants per display name
+alter table registrations
+    add constraint display_name_unique
+        unique (display_name);
