@@ -1,17 +1,19 @@
 package store
 
+import "time"
+
 type inMemoryStore struct {
 	db []Registration
 }
 
-func (m *inMemoryStore) All(orgID string) ([]Registration, error) {
+func (m *inMemoryStore) All(orgID string, page, pageSize int) ([]Registration, int, error) {
 	out := make([]Registration, 0)
 	for i := range m.db {
 		if m.db[i].OrgID == orgID {
 			out = append(out, m.db[i])
 		}
 	}
-	return out, nil
+	return out, len(out), nil
 }
 
 func (m *inMemoryStore) Find(orgID string, uid string) (*Registration, error) {
@@ -49,6 +51,7 @@ func (m *inMemoryStore) Create(r *Registration) (string, error) {
 		}
 	}
 
+	r.CreatedAt = time.Now()
 	m.db = append(m.db, *r)
 	return "", nil
 }

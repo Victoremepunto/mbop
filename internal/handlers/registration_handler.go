@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/redhatinsights/mbop/internal/store"
@@ -16,6 +17,21 @@ type registationCreateRequest struct {
 	DisplayName *string `json:"display_name,omitempty"`
 }
 
+type registrationCollection struct {
+	Registrations []registrationResponse `json:"registrations"`
+	Meta          registrationMeta       `json:"meta"`
+}
+
+type registrationResponse struct {
+	UID         string    `json:"uid"`
+	DisplayName string    `json:"display_name"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+type registrationMeta struct {
+	Count int `json:"count"`
+}
+
 func RegistrationListHandler(w http.ResponseWriter, r *http.Request) {
 	id := identity.Get(r.Context())
 	if !id.Identity.User.OrgAdmin {
@@ -23,15 +39,39 @@ func RegistrationListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := store.GetStore()
+	limit, err := getLimit(r)
+	if err != nil {
+		do400(w, err.Error())
+		return
+	}
+	offset, err := getOffset(r)
+	if err != nil {
+		do400(w, err.Error())
+		return
+	}
 
-	regs, err := db.All(id.Identity.OrgID)
+	db := store.GetStore()
+	regs, count, err := db.All(id.Identity.OrgID, limit, offset)
 	if err != nil {
 		do500(w, err.Error())
 		return
 	}
 
-	sendJSON(w, regs)
+	out := make([]registrationResponse, len(regs))
+	for i := range regs {
+		out[i] = registrationResponse{
+			UID:         regs[i].UID,
+			DisplayName: regs[i].DisplayName,
+			CreatedAt:   regs[i].CreatedAt,
+		}
+	}
+
+	sendJSON(w, &registrationCollection{
+		Registrations: out,
+		Meta: registrationMeta{
+			Count: count,
+		},
+	})
 }
 
 func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
