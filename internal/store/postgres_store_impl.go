@@ -16,7 +16,7 @@ type postgresStore struct {
 }
 
 func (p *postgresStore) All() ([]Registration, error) {
-	rows, err := p.db.Query(`select id, org_id, uid, extra from registrations`)
+	rows, err := p.db.Query(`select id, org_id, uid, display_name, extra from registrations`)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (p *postgresStore) All() ([]Registration, error) {
 
 func (p *postgresStore) Find(orgID, uid string) (*Registration, error) {
 	rows := p.db.QueryRow(
-		`select id, org_id, uid, extra from registrations where org_id = $1 and uid = $2 limit 1`,
+		`select id, org_id, uid, display_name, extra from registrations where org_id = $1 and uid = $2 limit 1`,
 		orgID,
 		uid,
 	)
@@ -44,15 +44,16 @@ func (p *postgresStore) Find(orgID, uid string) (*Registration, error) {
 }
 
 func (p *postgresStore) FindByUID(uid string) (*Registration, error) {
-	rows := p.db.QueryRow(`select id, org_id, uid, extra from registrations where uid = $1 limit 1`, uid)
+	rows := p.db.QueryRow(`select id, org_id, uid, display_name, extra from registrations where uid = $1 limit 1`, uid)
 	return scanRegistration(rows)
 }
 
 func (p *postgresStore) Create(r *Registration) (string, error) {
 	res := p.db.QueryRow(
-		`insert into registrations (org_id, uid, extra) values ($1, $2, $3) returning id`,
+		`insert into registrations (org_id, uid, display_name, extra) values ($1, $2, $3, $4) returning id`,
 		r.OrgID,
 		r.UID,
+		r.DisplayName,
 		r.Extra,
 	)
 
@@ -63,14 +64,14 @@ func (p *postgresStore) Create(r *Registration) (string, error) {
 		// constraint violation == 23505
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" {
-				return "", ErrUIDAlreadyExists
+				return "", ErrRegistrationAlreadyExists
 			}
 		} else {
 			return "", err
 		}
 	}
 
-	l.Log.Info("Created registration", "id", id, "org_id", r.OrgID, "uid", r.UID)
+	l.Log.Info("Created registration", "id", id, "org_id", r.OrgID, "uid", r.UID, "display_name", r.DisplayName)
 	return id, nil
 }
 
@@ -116,12 +117,13 @@ type scanner interface {
 
 func scanRegistration(row scanner) (*Registration, error) {
 	var (
-		id    string
-		orgID string
-		uid   string
-		extra []byte
+		id          string
+		orgID       string
+		uid         string
+		displayName string
+		extra       []byte
 	)
-	err := row.Scan(&id, &orgID, &uid, &extra)
+	err := row.Scan(&id, &orgID, &uid, &displayName, &extra)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrRegistrationNotFound
@@ -138,9 +140,10 @@ func scanRegistration(row scanner) (*Registration, error) {
 	}
 
 	return &Registration{
-		ID:    id,
-		OrgID: orgID,
-		UID:   uid,
-		Extra: e,
+		ID:          id,
+		OrgID:       orgID,
+		UID:         uid,
+		DisplayName: displayName,
+		Extra:       e,
 	}, nil
 }
