@@ -38,6 +38,9 @@ func (m *inMemoryStore) Create(r *Registration) (string, error) {
 		if m.db[i].UID == r.UID {
 			return "", ErrRegistrationAlreadyExists
 		}
+		if m.db[i].DisplayName == r.DisplayName {
+			return "", ErrRegistrationAlreadyExists
+		}
 	}
 
 	m.db = append(m.db, *r)
