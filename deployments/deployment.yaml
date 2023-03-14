@@ -125,6 +125,8 @@ objects:
             value: ${DISABLE_CATCHALL}
           - name: IS_INTERNAL_LABEL
             value: ${IS_INTERNAL_LABEL}
+          - name: DEBUG
+            value: ${DEBUG}
           image: quay.io/cloudservices/mbop:${IMAGE_TAG}
           imagePullPolicy: IfNotPresent
           name: mbop
@@ -221,3 +223,6 @@ parameters:
 - name: IS_INTERNAL_LABEL
   description: OCM label to inform whether or not an account is internal
   value: ""
+- name: DEBUG
+  description: Debug flag
+  value: "false"
