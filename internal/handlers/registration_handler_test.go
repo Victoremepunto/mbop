@@ -67,7 +67,7 @@ func (suite *RegistrationTestSuite) TestNoBodyCreate() {
 
 	status, rspBody := statusAndBodyFromReq(suite)
 	suite.Equal(http.StatusBadRequest, status)
-	suite.Equal("{\"message\":\"failed to unmarshal body: unexpected end of JSON input\"}", rspBody)
+	suite.Equal("{\"message\":\"invalid body, need a json object with [uid] and [display_name] to register satellite\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestNoDisplayNameCreate() {
@@ -89,7 +89,7 @@ func (suite *RegistrationTestSuite) TestBadBodyCreate() {
 
 	status, rspBody := statusAndBodyFromReq(suite)
 	suite.Equal(http.StatusBadRequest, status)
-	suite.Equal("{\"message\":\"failed to unmarshal body: unexpected end of JSON input\"}", rspBody)
+	suite.Equal("{\"message\":\"invalid body, need a json object with [uid] and [display_name] to register satellite\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestNotOrgAdminCreate() {

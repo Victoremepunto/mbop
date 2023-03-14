@@ -84,7 +84,7 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 	var body registationCreateRequest
 	err = json.Unmarshal(b, &body)
 	if err != nil {
-		do400(w, "failed to unmarshal body: "+err.Error())
+		do400(w, "invalid body, need a json object with [uid] and [display_name] to register satellite")
 		return
 	}
 
