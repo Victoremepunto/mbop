@@ -21,6 +21,7 @@ type MbopConfig struct {
 	PublicKey              string
 	DisableCatchall        bool
 	IsInternalLabel        string
+	Debug                  bool
 
 	StoreBackend     string
 	DatabaseHost     string
@@ -38,6 +39,7 @@ func Get() *MbopConfig {
 	}
 
 	disableCatchAll, _ := strconv.ParseBool(fetchWithDefault("DISABLE_CATCHALL", "false"))
+	debug, _ := strconv.ParseBool(fetchWithDefault("DEBUG", "false"))
 
 	c := &MbopConfig{
 		UsersModule:     fetchWithDefault("USERS_MODULE", ""),
@@ -63,6 +65,7 @@ func Get() *MbopConfig {
 		PrivateKey:             fetchWithDefault("TOKEN_PRIVATE_KEY", ""),
 		PublicKey:              fetchWithDefault("TOKEN_PUBLIC_KEY", ""),
 		IsInternalLabel:        fetchWithDefault("IS_INTERNAL_LABEL", ""),
+		Debug:                  debug,
 	}
 
 	conf = c

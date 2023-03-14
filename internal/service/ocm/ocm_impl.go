@@ -20,7 +20,7 @@ type SDK struct {
 func (ocm *SDK) InitSdkConnection(ctx context.Context) error {
 	// Create a logger that has the debug level enabled:
 	logger, err := logging.NewGoLoggerBuilder().
-		Debug(true).
+		Debug(config.Get().Debug).
 		Build()
 
 	if err != nil {
