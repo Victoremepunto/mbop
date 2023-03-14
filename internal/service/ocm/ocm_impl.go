@@ -55,7 +55,12 @@ func (ocm *SDK) InitSdkConnection(ctx context.Context) error {
 
 func (ocm *SDK) GetUsers(usernames models.UserBody, q models.UserV1Query) (models.Users, error) {
 	search := createSearchString(usernames)
-	collection := ocm.client.AccountsMgmt().V1().Accounts().List().Parameter("fetchLabels", true).Search(search)
+	collection := ocm.client.AccountsMgmt().
+		V1().
+		Accounts().
+		List().
+		Parameter("fetchLabels", true).
+		Search(search)
 
 	collection = collection.Order(createQueryOrder(q))
 
