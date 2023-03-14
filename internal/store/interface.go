@@ -1,7 +1,7 @@
 package store
 
 type Store interface {
-	All() ([]Registration, error)
+	All(orgID string, limit, offset int) ([]Registration, int, error)
 	// Find a registration that both the org ID + UID match
 	Find(orgID, uid string) (*Registration, error)
 	// lookup a registration by uid only

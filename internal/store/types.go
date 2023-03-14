@@ -1,5 +1,7 @@
 package store
 
+import "time"
+
 /*
 Registration represents an instance of a satellite that is registered via:
 - OrgID; comes from keycloak
@@ -15,6 +17,7 @@ type Registration struct {
 	UID         string
 	DisplayName string
 	Extra       map[string]interface{}
+	CreatedAt   time.Time
 }
 
 type RegistrationUpdate struct {

@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"encoding/json"
+	"time"
 
 	// the pgx driver for the database
 	_ "github.com/golang-migrate/migrate/v4/database/pgx"
@@ -15,10 +16,19 @@ type postgresStore struct {
 	db *sql.DB
 }
 
-func (p *postgresStore) All() ([]Registration, error) {
-	rows, err := p.db.Query(`select id, org_id, uid, display_name, extra from registrations`)
+func (p *postgresStore) All(orgID string, limit, offset int) ([]Registration, int, error) {
+	rows, err := p.db.Query(`select
+	id, org_id, uid, display_name, extra, created_at
+	from registrations
+	where org_id = $1
+	order by created_at desc
+	limit $2
+	offset $3`,
+		orgID,
+		limit,
+		offset)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -26,17 +36,23 @@ func (p *postgresStore) All() ([]Registration, error) {
 	for rows.Next() {
 		r, err := scanRegistration(rows)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		out = append(out, *r)
 	}
 
-	return out, nil
+	var count int
+	row := p.db.QueryRow(`select count(id) from registrations where org_id = $1`, orgID)
+	if err := row.Scan(&count); err != nil {
+		return nil, 0, err
+	}
+
+	return out, count, nil
 }
 
 func (p *postgresStore) Find(orgID, uid string) (*Registration, error) {
 	rows := p.db.QueryRow(
-		`select id, org_id, uid, display_name, extra from registrations where org_id = $1 and uid = $2 limit 1`,
+		`select id, org_id, uid, display_name, extra, created_at from registrations where org_id = $1 and uid = $2 limit 1`,
 		orgID,
 		uid,
 	)
@@ -44,7 +60,7 @@ func (p *postgresStore) Find(orgID, uid string) (*Registration, error) {
 }
 
 func (p *postgresStore) FindByUID(uid string) (*Registration, error) {
-	rows := p.db.QueryRow(`select id, org_id, uid, display_name, extra from registrations where uid = $1 limit 1`, uid)
+	rows := p.db.QueryRow(`select id, org_id, uid, display_name, extra, created_at from registrations where uid = $1 limit 1`, uid)
 	return scanRegistration(rows)
 }
 
@@ -122,8 +138,9 @@ func scanRegistration(row scanner) (*Registration, error) {
 		uid         string
 		displayName string
 		extra       []byte
+		createdAt   time.Time
 	)
-	err := row.Scan(&id, &orgID, &uid, &displayName, &extra)
+	err := row.Scan(&id, &orgID, &uid, &displayName, &extra, &createdAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrRegistrationNotFound
@@ -145,5 +162,6 @@ func scanRegistration(row scanner) (*Registration, error) {
 		UID:         uid,
 		DisplayName: displayName,
 		Extra:       e,
+		CreatedAt:   createdAt,
 	}, nil
 }

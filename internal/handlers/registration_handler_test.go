@@ -3,11 +3,13 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/redhatinsights/mbop/internal/config"
@@ -279,6 +281,38 @@ func (suite *RegistrationTestSuite) TestRegistrationNotFoundDelete() {
 	status, rspBody := statusAndBodyFromReq(suite)
 	suite.Equal(http.StatusNotFound, status)
 	suite.Equal("{\"message\":\"registration not found\"}", rspBody)
+}
+
+func (suite *RegistrationTestSuite) TestRegistrationList() {
+	_, err := suite.store.Create(&store.Registration{UID: "abc1234", OrgID: "1234", DisplayName: "a test"})
+	suite.Nil(err)
+
+	req := httptest.NewRequest(http.MethodGet, "http://foobar/registrations", nil)
+	req = req.WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
+		User:  identity.User{OrgAdmin: true},
+		OrgID: "1234",
+	}}))
+
+	RegistrationListHandler(suite.rec, req)
+
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusOK, status)
+
+	var body registrationCollection
+	var raw map[string]any
+	suite.Nil(json.Unmarshal([]byte(rspBody), &body))
+	suite.Nil(json.Unmarshal([]byte(rspBody), &raw))
+
+	suite.Equal("a test", body.Registrations[0].DisplayName)
+	suite.Equal("abc1234", body.Registrations[0].UID)
+	suite.Equal(1, body.Meta.Count)
+
+	regs := raw["registrations"].([]any)
+	r := regs[0].(map[string]any)
+	t, err := time.Parse(time.RFC3339, r["created_at"].(string))
+
+	suite.Nil(err)
+	suite.WithinDuration(time.Now(), t, 5*time.Second)
 }
 
 func statusAndBodyFromReq(suite *RegistrationTestSuite) (int, string) {

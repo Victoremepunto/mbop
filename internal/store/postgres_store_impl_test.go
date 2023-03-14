@@ -2,7 +2,9 @@ package store
 
 import (
 	"database/sql"
+	"strconv"
 	"testing"
+	"time"
 
 	l "github.com/redhatinsights/mbop/internal/logger"
 	"github.com/stretchr/testify/suite"
@@ -91,6 +93,7 @@ func (suite *TestSuite) TestFindOne() {
 	suite.Nil(err, "failed to find one registration")
 	suite.Equal(found.UID, "1234")
 	suite.Equal(found.OrgID, "1234")
+	suite.WithinDuration(found.CreatedAt, time.Now(), 5*time.Second)
 }
 
 func (suite *TestSuite) TestFindByUID() {
@@ -102,6 +105,7 @@ func (suite *TestSuite) TestFindByUID() {
 	suite.Nil(err, "failed to find one registration")
 	suite.Equal(found.UID, "1234")
 	suite.Equal(found.OrgID, "1234")
+	suite.WithinDuration(found.CreatedAt, time.Now(), 5*time.Second)
 }
 
 func (suite *TestSuite) TestFindByUIDNotThere() {
@@ -119,15 +123,15 @@ func (suite *TestSuite) TestFindAll() {
 	_, err := suite.store.Create(&r)
 	suite.Nil(err, "failed to insert")
 
-	r.OrgID = "2345"
+	r.OrgID = "1234"
 	r.UID = "2345"
 	r.DisplayName = "two"
 	_, err = suite.store.Create(&r)
 	suite.Nil(err, "failed to insert")
 
-	out, err := suite.store.All()
+	_, count, err := suite.store.All("1234", 0, 0)
 	suite.Nil(err, "failed to list all registrations")
-	suite.Equal(len(out), 2)
+	suite.Equal(count, 2)
 }
 
 func (suite *TestSuite) TestUpdate() {
@@ -140,4 +144,36 @@ func (suite *TestSuite) TestUpdate() {
 		&RegistrationUpdate{Extra: &map[string]interface{}{"thing": true}},
 	)
 	suite.Nil(err, "failed to update registration")
+}
+
+func (suite *TestSuite) TestFindAllWithPagination() {
+	for i := 0; i < 10; i++ {
+		s := strconv.Itoa(i)
+		_, err := suite.store.Create(&Registration{
+			OrgID:       "a",
+			UID:         s,
+			DisplayName: s,
+		})
+		suite.Nil(err)
+	}
+
+	// stepping through the pages ensuring they start/end with where it's expected
+	regs, count, err := suite.store.All("a", 5, 0)
+	suite.Nil(err)
+	suite.Equal(10, count)
+	suite.Equal(5, len(regs))
+	suite.Equal("9", regs[0].UID)
+	suite.Equal("5", regs[len(regs)-1].UID)
+
+	regs, count, err = suite.store.All("a", 5, 5)
+	suite.Nil(err)
+	suite.Equal(10, count)
+	suite.Equal(5, len(regs))
+	suite.Equal("4", regs[0].UID)
+	suite.Equal("0", regs[len(regs)-1].UID)
+
+	regs, count, err = suite.store.All("a", 5, 10)
+	suite.Nil(err)
+	suite.Equal(10, count)
+	suite.Equal(0, len(regs))
 }
