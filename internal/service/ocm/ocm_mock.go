@@ -29,11 +29,6 @@ func (ocm *SDKMock) GetUsers(u models.UserBody, q models.UserV1Query) (models.Us
 	}
 
 	for _, user := range u.Users {
-		orgID, err := rand.Int(rand.Reader, big.NewInt(999999-100000))
-		if err != nil {
-			return users, err
-		}
-
 		displayNameNum, err := rand.Int(rand.Reader, big.NewInt(99-0))
 		if err != nil {
 			return users, err
@@ -49,7 +44,7 @@ func (ocm *SDKMock) GetUsers(u models.UserBody, q models.UserV1Query) (models.Us
 			IsActive:      true,
 			IsInternal:    false,
 			Locale:        "en_US",
-			OrgID:         strconv.Itoa(int(orgID.Int64())),
+			OrgID:         user,
 			DisplayName:   "FedRAMP" + strconv.Itoa(int(displayNameNum.Int64())),
 			Type:          "User",
 		})
