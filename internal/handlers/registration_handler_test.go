@@ -99,7 +99,7 @@ func (suite *RegistrationTestSuite) TestNotOrgAdminCreate() {
 	body := []byte(`{"uid": "abc1234", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
-			User:  identity.User{OrgAdmin: false},
+			User:  identity.User{OrgAdmin: false, Username: "foobar"},
 			OrgID: "1234",
 		}}))
 
@@ -110,7 +110,7 @@ func (suite *RegistrationTestSuite) TestNotOrgAdminCreate() {
 	suite.Equal("{\"message\":\"user must be org admin to register satellite\"}", rspBody)
 }
 
-func (suite *RegistrationTestSuite) TestNoGatewayCNCreate() {
+func (suite *RegistrationTestSuite) TestNoUsernameCreate() {
 	_, err := suite.store.Create(&store.Registration{UID: "abc1234"})
 	suite.Nil(err)
 
@@ -118,6 +118,24 @@ func (suite *RegistrationTestSuite) TestNoGatewayCNCreate() {
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
 			User:  identity.User{OrgAdmin: true},
+			OrgID: "1234",
+		}}))
+
+	RegistrationCreateHandler(suite.rec, req)
+
+	status, rspBody := statusAndBodyFromReq(suite)
+	suite.Equal(http.StatusBadRequest, status)
+	suite.Equal("{\"message\":\"[username] not present in identity header\"}", rspBody)
+}
+
+func (suite *RegistrationTestSuite) TestNoGatewayCNCreate() {
+	_, err := suite.store.Create(&store.Registration{UID: "abc1234"})
+	suite.Nil(err)
+
+	body := []byte(`{"uid": "abc1234", "display_name": "foobar"}`)
+	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
+		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
+			User:  identity.User{OrgAdmin: true, Username: "foobar"},
 			OrgID: "1234",
 		}}))
 
@@ -135,7 +153,7 @@ func (suite *RegistrationTestSuite) TestNotMatchingCNCreate() {
 	body := []byte(`{"uid": "abc1234", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
-			User:  identity.User{OrgAdmin: false},
+			User:  identity.User{OrgAdmin: false, Username: "foobar"},
 			OrgID: "1234",
 		}}))
 	req.Header.Set("x-rh-certauth-cn", "/CN=12345")
@@ -154,7 +172,7 @@ func (suite *RegistrationTestSuite) TestExistingRegistrationCreate() {
 	body := []byte(`{"uid": "abc1234", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
-			User:  identity.User{OrgAdmin: true},
+			User:  identity.User{OrgAdmin: true, Username: "foobar"},
 			OrgID: "1234",
 		}}))
 	req.Header.Set("x-rh-certauth-cn", "/CN=abc1234")
@@ -173,7 +191,7 @@ func (suite *RegistrationTestSuite) TestExistingUidCreate() {
 	body := []byte(`{"uid": "abc1234", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
-			User:  identity.User{OrgAdmin: true},
+			User:  identity.User{OrgAdmin: true, Username: "foobar"},
 			OrgID: "1234",
 		}}))
 	req.Header.Set("x-rh-certauth-cn", "/CN=abc1234")
@@ -189,7 +207,7 @@ func (suite *RegistrationTestSuite) TestSuccessfulRegistrationCreate() {
 	body := []byte(`{"uid": "abc1234", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
-			User:  identity.User{OrgAdmin: true},
+			User:  identity.User{OrgAdmin: true, Username: "foobar"},
 			OrgID: "1234",
 		}}))
 	req.Header.Set("x-rh-certauth-cn", "/CN=abc1234")
@@ -208,7 +226,7 @@ func (suite *RegistrationTestSuite) TestSuccessfulRegistrationCreateOtherUIDForm
 	body := []byte(`{"uid": "bar", "display_name": "foobar"}`)
 	req := httptest.NewRequest("POST", "http://foobar/registrations", bytes.NewReader(body)).
 		WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
-			User:  identity.User{OrgAdmin: true},
+			User:  identity.User{OrgAdmin: true, Username: "foobar"},
 			OrgID: "1234",
 		}}))
 	req.Header.Set("x-rh-certauth-cn", "O=foo, /CN=bar")
@@ -229,7 +247,7 @@ func (suite *RegistrationTestSuite) TestSuccessfulRegistrationDelete() {
 
 	req := httptest.NewRequest(http.MethodDelete, "http://foobar/registrations/{uid}", nil)
 	req = req.WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
-		User:  identity.User{OrgAdmin: true},
+		User:  identity.User{OrgAdmin: true, Username: "foobar"},
 		OrgID: "1234",
 	}}))
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -251,7 +269,7 @@ func (suite *RegistrationTestSuite) TestNotOrgAdminDelete() {
 
 	req := httptest.NewRequest(http.MethodDelete, "http://foobar/registrations/{uid}", nil)
 	req = req.WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
-		User:  identity.User{OrgAdmin: false},
+		User:  identity.User{OrgAdmin: false, Username: "foobar"},
 		OrgID: "1234",
 	}}))
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -270,7 +288,7 @@ func (suite *RegistrationTestSuite) TestRegistrationNotFoundDelete() {
 
 	req := httptest.NewRequest(http.MethodDelete, "http://foobar/registrations/{uid}", nil)
 	req = req.WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
-		User:  identity.User{OrgAdmin: true},
+		User:  identity.User{OrgAdmin: true, Username: "foobar"},
 		OrgID: "1234",
 	}}))
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -289,7 +307,7 @@ func (suite *RegistrationTestSuite) TestRegistrationList() {
 
 	req := httptest.NewRequest(http.MethodGet, "http://foobar/registrations", nil)
 	req = req.WithContext(context.WithValue(context.Background(), identity.Key, identity.XRHID{Identity: identity.Identity{
-		User:  identity.User{OrgAdmin: true},
+		User:  identity.User{OrgAdmin: true, Username: "foobar"},
 		OrgID: "1234",
 	}}))
 

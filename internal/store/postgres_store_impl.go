@@ -18,7 +18,7 @@ type postgresStore struct {
 
 func (p *postgresStore) All(orgID string, limit, offset int) ([]Registration, int, error) {
 	rows, err := p.db.Query(`select
-	id, org_id, uid, display_name, extra, created_at
+	id, org_id, username, uid, display_name, extra, created_at
 	from registrations
 	where org_id = $1
 	order by created_at desc
@@ -52,7 +52,7 @@ func (p *postgresStore) All(orgID string, limit, offset int) ([]Registration, in
 
 func (p *postgresStore) Find(orgID, uid string) (*Registration, error) {
 	rows := p.db.QueryRow(
-		`select id, org_id, uid, display_name, extra, created_at from registrations where org_id = $1 and uid = $2 limit 1`,
+		`select id, org_id, username, uid, display_name, extra, created_at from registrations where org_id = $1 and uid = $2 limit 1`,
 		orgID,
 		uid,
 	)
@@ -60,14 +60,18 @@ func (p *postgresStore) Find(orgID, uid string) (*Registration, error) {
 }
 
 func (p *postgresStore) FindByUID(uid string) (*Registration, error) {
-	rows := p.db.QueryRow(`select id, org_id, uid, display_name, extra, created_at from registrations where uid = $1 limit 1`, uid)
+	rows := p.db.QueryRow(`select id, org_id, username, uid, display_name, extra, created_at from registrations where uid = $1 limit 1`, uid)
 	return scanRegistration(rows)
 }
 
 func (p *postgresStore) Create(r *Registration) (string, error) {
 	res := p.db.QueryRow(
-		`insert into registrations (org_id, uid, display_name, extra) values ($1, $2, $3, $4) returning id`,
+		`insert into registrations 
+		(org_id, username, uid, display_name, extra) 
+		values ($1, $2, $3, $4, $5) 
+		returning id`,
 		r.OrgID,
+		r.Username,
 		r.UID,
 		r.DisplayName,
 		r.Extra,
@@ -87,7 +91,7 @@ func (p *postgresStore) Create(r *Registration) (string, error) {
 		}
 	}
 
-	l.Log.Info("Created registration", "id", id, "org_id", r.OrgID, "uid", r.UID, "display_name", r.DisplayName)
+	l.Log.Info("Created registration", "id", id, "org_id", r.OrgID, "username", r.Username, "uid", r.UID, "display_name", r.DisplayName)
 	return id, nil
 }
 
@@ -135,12 +139,13 @@ func scanRegistration(row scanner) (*Registration, error) {
 	var (
 		id          string
 		orgID       string
+		username    string
 		uid         string
 		displayName string
 		extra       []byte
 		createdAt   time.Time
 	)
-	err := row.Scan(&id, &orgID, &uid, &displayName, &extra, &createdAt)
+	err := row.Scan(&id, &orgID, &username, &uid, &displayName, &extra, &createdAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrRegistrationNotFound
@@ -159,6 +164,7 @@ func scanRegistration(row scanner) (*Registration, error) {
 	return &Registration{
 		ID:          id,
 		OrgID:       orgID,
+		Username:    username,
 		UID:         uid,
 		DisplayName: displayName,
 		Extra:       e,

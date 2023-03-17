@@ -14,6 +14,7 @@ Extra is just a jsonb column if we want to store some extra metadata someday
 type Registration struct {
 	ID          string
 	OrgID       string
+	Username    string
 	UID         string
 	DisplayName string
 	Extra       map[string]interface{}
