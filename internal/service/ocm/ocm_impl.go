@@ -152,7 +152,9 @@ func (ocm *SDK) CloseSdkConnection() {
 func getIsInternal(user *v1.Account) bool {
 	labels := user.Labels()
 	for _, l := range labels {
-		if l.Value() == config.Get().IsInternalLabel {
+		labelExists := l.Key() == config.Get().IsInternalLabel
+		labelTruthy := l.Value() == "true"
+		if labelExists && labelTruthy {
 			return true
 		}
 	}
