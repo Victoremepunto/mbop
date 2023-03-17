@@ -25,6 +25,7 @@ type registrationCollection struct {
 type registrationResponse struct {
 	UID         string    `json:"uid"`
 	DisplayName string    `json:"display_name"`
+	Username    string    `json:"username"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 
@@ -62,6 +63,7 @@ func RegistrationListHandler(w http.ResponseWriter, r *http.Request) {
 		out[i] = registrationResponse{
 			UID:         regs[i].UID,
 			DisplayName: regs[i].DisplayName,
+			Username:    regs[i].Username,
 			CreatedAt:   regs[i].CreatedAt,
 		}
 	}

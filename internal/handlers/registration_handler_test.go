@@ -302,7 +302,12 @@ func (suite *RegistrationTestSuite) TestRegistrationNotFoundDelete() {
 }
 
 func (suite *RegistrationTestSuite) TestRegistrationList() {
-	_, err := suite.store.Create(&store.Registration{UID: "abc1234", OrgID: "1234", DisplayName: "a test"})
+	_, err := suite.store.Create(&store.Registration{
+		UID:         "abc1234",
+		Username:    "foobar",
+		OrgID:       "1234",
+		DisplayName: "a test",
+	})
 	suite.Nil(err)
 
 	req := httptest.NewRequest(http.MethodGet, "http://foobar/registrations", nil)
@@ -322,6 +327,7 @@ func (suite *RegistrationTestSuite) TestRegistrationList() {
 	suite.Nil(json.Unmarshal([]byte(rspBody), &raw))
 
 	suite.Equal("a test", body.Registrations[0].DisplayName)
+	suite.Equal("foobar", body.Registrations[0].Username)
 	suite.Equal("abc1234", body.Registrations[0].UID)
 	suite.Equal(1, body.Meta.Count)
 
