@@ -16,7 +16,7 @@ type OcmImplTestSuite struct {
 }
 
 func (suite *OcmImplTestSuite) SetupSuite() {
-	suite.IsInternalLabel = "foo"
+	suite.IsInternalLabel = "internalLabelKey"
 }
 
 func (suite *OcmImplTestSuite) SetupTest() {
@@ -24,9 +24,10 @@ func (suite *OcmImplTestSuite) SetupTest() {
 }
 
 func (suite *OcmImplTestSuite) TestGetIsInternalMatch() {
-	os.Setenv("IS_INTERNAL_LABEL", "foo")
+	os.Setenv("IS_INTERNAL_LABEL", "internalLabelKey")
 	l := &v1.LabelBuilder{}
-	l.Value(suite.IsInternalLabel)
+	l.Key(suite.IsInternalLabel)
+	l.Value("true")
 	acctB := &v1.AccountBuilder{}
 	acctB.Labels(l)
 	acct, _ := acctB.Build()
@@ -34,16 +35,28 @@ func (suite *OcmImplTestSuite) TestGetIsInternalMatch() {
 }
 
 func (suite *OcmImplTestSuite) TestGetIsInternaEmptyLabels() {
-	os.Setenv("IS_INTERNAL_LABEL", "foo")
+	os.Setenv("IS_INTERNAL_LABEL", "internalLabelKey")
 	acctB := &v1.AccountBuilder{}
 	acct, _ := acctB.Build()
 	suite.Equal(false, getIsInternal(acct))
 }
 
-func (suite *OcmImplTestSuite) TestGetIsInternalNoMatch() {
-	os.Setenv("IS_INTERNAL_LABEL", "bar")
+func (suite *OcmImplTestSuite) TestGetIsInternalNoKeyMatch() {
+	os.Setenv("IS_INTERNAL_LABEL", "foo")
 	l := &v1.LabelBuilder{}
-	l.Value(suite.IsInternalLabel)
+	l.Key(suite.IsInternalLabel)
+	l.Value("true")
+	acctB := &v1.AccountBuilder{}
+	acctB.Labels(l)
+	acct, _ := acctB.Build()
+	suite.Equal(false, getIsInternal(acct))
+}
+
+func (suite *OcmImplTestSuite) TestGetIsInternalNoValMatch() {
+	os.Setenv("IS_INTERNAL_LABEL", "internalLabelKey")
+	l := &v1.LabelBuilder{}
+	l.Key(suite.IsInternalLabel)
+	l.Value("false")
 	acctB := &v1.AccountBuilder{}
 	acctB.Labels(l)
 	acct, _ := acctB.Build()
