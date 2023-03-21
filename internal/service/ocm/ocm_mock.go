@@ -13,11 +13,11 @@ import (
 
 type SDKMock struct{}
 
-func (ocm *SDKMock) InitSdkConnection(ctx context.Context) error {
+func (ocm *SDKMock) InitSdkConnection(_ context.Context) error {
 	return nil
 }
 
-func (ocm *SDKMock) GetUsers(u models.UserBody, q models.UserV1Query) (models.Users, error) {
+func (ocm *SDKMock) GetUsers(u models.UserBody, _ models.UserV1Query) (models.Users, error) {
 	var users models.Users
 
 	if u.Users == nil {
@@ -110,7 +110,7 @@ func (ocm *SDKMock) GetAccountV3Users(orgID string, q models.UserV3Query) (model
 	return users, nil
 }
 
-func (ocm *SDKMock) GetAccountV3UsersBy(orgID string, q models.UserV3Query, body models.UsersByBody) (models.Users, error) {
+func (ocm *SDKMock) GetAccountV3UsersBy(orgID string, q models.UserV3Query, _ models.UsersByBody) (models.Users, error) {
 	users := models.Users{Users: []models.User{}}
 
 	if orgID == "empty" {

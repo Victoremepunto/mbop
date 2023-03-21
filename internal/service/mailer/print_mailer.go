@@ -12,7 +12,7 @@ type printEmailer struct{}
 
 var _ = (Emailer)(&printEmailer{})
 
-func (p printEmailer) SendEmail(ctx context.Context, email *models.Email) error {
+func (p printEmailer) SendEmail(_ context.Context, email *models.Email) error {
 	l := 50
 	if len(email.Body) < 50 {
 		l = len(email.Body)
