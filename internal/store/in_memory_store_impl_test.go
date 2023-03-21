@@ -15,7 +15,7 @@ func (suite *InMemoryStoreTestSuite) SetupSuite() {}
 
 func (suite *InMemoryStoreTestSuite) TearDownSuite() {}
 
-func (suite *InMemoryStoreTestSuite) BeforeTest(_, testName string) {
+func (suite *InMemoryStoreTestSuite) BeforeTest(_, _ string) {
 	suite.store = &inMemoryStore{db: make([]Registration, 0)}
 }
 

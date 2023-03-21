@@ -7,7 +7,7 @@ import (
 	"github.com/redhatinsights/mbop/internal/models"
 )
 
-func Status(w http.ResponseWriter, r *http.Request) {
+func Status(w http.ResponseWriter, _ *http.Request) {
 	status := models.Status{
 		ConfiguredModules: models.ConfiguredModules{
 			Users:  config.Get().UsersModule,

@@ -75,6 +75,8 @@ objects:
                 optional: true
           - name: MAILER_MODULE
             value: "${MAILER_MODULE}"
+          - name: FROM_EMAIL
+            value: "${FROM_EMAIL}"
           - name: DATABASE_HOST
             valueFrom:
               secretKeyRef:
@@ -217,6 +219,9 @@ parameters:
 - name: MAILER_MODULE
   description: which module to use to send emails
   value: "print"
+- name: FROM_EMAIL
+  description: where to send emails from via SES
+  value: "no-reply@redhat.com"
 - name: STORE_BACKEND
   description: which store to use for satellite registrations
   value: "memory"

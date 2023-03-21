@@ -79,14 +79,15 @@ func (m *MBOPServer) findUsersBy(accountNo string, orgID string, adminOnly strin
 		// When adminOnly is true, parameter “status” is ignored
 		if adminOnly == "true" && !user.IsOrgAdmin {
 			continue
-		} else {
-			switch status {
-			case "disabled", "enabled", "all":
-				if user.IsActive {
-					continue
-				}
+		}
+
+		switch status {
+		case "disabled", "enabled", "all":
+			if user.IsActive {
+				continue
 			}
 		}
+
 		if accountNo != "" && user.AccountNumber != accountNo {
 			continue
 		}
@@ -137,7 +138,7 @@ func (m *MBOPServer) findUsersBy(accountNo string, orgID string, adminOnly strin
 	return out, nil
 }
 
-func (m *MBOPServer) jwtHandler(w http.ResponseWriter, r *http.Request) {
+func (m *MBOPServer) jwtHandler(w http.ResponseWriter, _ *http.Request) {
 	resp, err := m.getJWT("redhat-external")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
@@ -170,7 +171,7 @@ func (m *MBOPServer) getJWT(realm string) (*JSONStruct, error) {
 	return jsonstruct, nil
 }
 
-func (m *MBOPServer) getUser(w http.ResponseWriter, r *http.Request) (*models.User, error) {
+func (m *MBOPServer) getUser(_ http.ResponseWriter, r *http.Request) (*models.User, error) {
 	auth := r.Header.Get("Authorization")
 	if auth == "" {
 		return &models.User{}, fmt.Errorf("no auth header found")
