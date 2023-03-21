@@ -3,7 +3,6 @@ package mailer
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
@@ -21,10 +20,11 @@ func InitConfig() error {
 	switch config.Get().MailerModule {
 	case "aws":
 		config, err := awsConfig.LoadDefaultConfig(context.Background(),
+			awsConfig.WithRegion(config.Get().SESRegion),
 			awsConfig.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 				Value: aws.Credentials{
-					AccessKeyID:     os.Getenv("SES_ACCESS_KEY"),
-					SecretAccessKey: os.Getenv("SES_SECRET_KEY"),
+					AccessKeyID:     config.Get().SESAccessKey,
+					SecretAccessKey: config.Get().SESSecretKey,
 					Source:          "fedrampbop",
 				},
 			},
@@ -51,13 +51,8 @@ type awsSESEmailer struct {
 
 func (s *awsSESEmailer) SendEmail(ctx context.Context, email *models.Email) error {
 	out, err := s.client.SendEmail(ctx, &ses.SendEmailInput{
-		// what is this? will need to be validated in AWS
-		FromEmailAddress: aws.String("no-reply@redhat.com"),
+		FromEmailAddress: aws.String(config.Get().FromEmail),
 		Destination: &sesTypes.Destination{
-			// TODO: integrate username lookups? the docs indicate that but not
-			// sure if it would actually be necessary here.
-			// TODO: support for "\"Real Name\" user@example.com" sending, right
-			// now AWS wants _just_ the email so we will have to sanitize the input
 			ToAddresses:  email.Recipients,
 			CcAddresses:  email.CcList,
 			BccAddresses: email.BccList,

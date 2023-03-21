@@ -6,6 +6,10 @@ import (
 )
 
 type MbopConfig struct {
+	FromEmail              string
+	SESRegion              string
+	SESAccessKey           string
+	SESSecretKey           string
 	MailerModule           string
 	JwtModule              string
 	JwkURL                 string
@@ -46,6 +50,10 @@ func Get() *MbopConfig {
 		JwtModule:       fetchWithDefault("JWT_MODULE", ""),
 		JwkURL:          fetchWithDefault("JWK_URL", ""),
 		MailerModule:    fetchWithDefault("MAILER_MODULE", "print"),
+		FromEmail:       fetchWithDefault("FROM_EMAIL", "no-reply@redhat.com"),
+		SESRegion:       fetchWithDefault("SES_REGION", "us-east-1"),
+		SESAccessKey:    fetchWithDefault("SES_ACCESS_KEY", ""),
+		SESSecretKey:    fetchWithDefault("SES_SECRET_KEY", ""),
 		DisableCatchall: disableCatchAll,
 
 		DatabaseHost:     fetchWithDefault("DATABASE_HOST", "localhost"),
