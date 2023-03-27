@@ -47,31 +47,55 @@ func TestSuiteRun(t *testing.T) {
 }
 
 func (suite *TestSuite) TestCreateWithoutExtra() {
-	r := Registration{OrgID: "1234", UID: "1234"}
+	r := Registration{
+		OrgID:    "1234",
+		UID:      "1234",
+		Username: "foobar",
+	}
 	id, err := suite.store.Create(&r)
 	suite.Nil(err, "failed to insert without extra")
 	suite.NotEqual("", id, "something funky with returning the id")
 }
 
 func (suite *TestSuite) TestCreateWithExtra() {
-	r := Registration{OrgID: "1234", UID: "1234", Extra: map[string]interface{}{"thing": true}}
+	r := Registration{
+		OrgID:    "1234",
+		Username: "foobar",
+		UID:      "1234",
+		Extra:    map[string]interface{}{"thing": true},
+	}
 	id, err := suite.store.Create(&r)
 	suite.Nil(err, "failed to insert")
 	suite.NotEqual("", id, "something funky with returning the id")
 }
 
 func (suite *TestSuite) TestCreateDuplicateDisplayName() {
-	r := Registration{OrgID: "1234", UID: "1234", DisplayName: "dupe"}
+	r := Registration{
+		OrgID:       "1234",
+		Username:    "foobar",
+		UID:         "1234",
+		DisplayName: "dupe",
+	}
 	_, err := suite.store.Create(&r)
 	suite.Nil(err, "failed to insert")
 
-	r2 := Registration{OrgID: "2345", UID: "2345", DisplayName: "dupe"}
+	r2 := Registration{
+		OrgID:       "2345",
+		Username:    "foobar",
+		UID:         "2345",
+		DisplayName: "dupe",
+	}
 	_, err = suite.store.Create(&r2)
 	suite.Error(err, "inserted successfully even when it shouldn't have")
 }
 
 func (suite *TestSuite) TestDelete() {
-	r := Registration{OrgID: "1234", UID: "1234", Extra: map[string]interface{}{"thing": true}}
+	r := Registration{
+		OrgID:    "1234",
+		Username: "foobar",
+		UID:      "1234",
+		Extra:    map[string]interface{}{"thing": true},
+	}
 	_, err := suite.store.Create(&r)
 	suite.Nil(err, "failed to setup for deletion")
 
@@ -85,7 +109,12 @@ func (suite *TestSuite) TestDeleteNotExisting() {
 }
 
 func (suite *TestSuite) TestFindOne() {
-	r := Registration{OrgID: "1234", UID: "1234", Extra: map[string]interface{}{"thing": true}}
+	r := Registration{
+		OrgID:    "1234",
+		Username: "foobar",
+		UID:      "1234",
+		Extra:    map[string]interface{}{"thing": true},
+	}
 	_, err := suite.store.Create(&r)
 	suite.Nil(err, "failed to insert: %v", err)
 
@@ -93,11 +122,17 @@ func (suite *TestSuite) TestFindOne() {
 	suite.Nil(err, "failed to find one registration")
 	suite.Equal(found.UID, "1234")
 	suite.Equal(found.OrgID, "1234")
+	suite.Equal(found.Username, "foobar")
 	suite.WithinDuration(found.CreatedAt, time.Now(), 5*time.Second)
 }
 
 func (suite *TestSuite) TestFindByUID() {
-	r := Registration{OrgID: "1234", UID: "1234", Extra: map[string]interface{}{"thing": true}}
+	r := Registration{
+		OrgID:    "1234",
+		Username: "foobar",
+		UID:      "1234",
+		Extra:    map[string]interface{}{"thing": true},
+	}
 	_, err := suite.store.Create(&r)
 	suite.Nil(err, "failed to insert: %v", err)
 
@@ -105,6 +140,7 @@ func (suite *TestSuite) TestFindByUID() {
 	suite.Nil(err, "failed to find one registration")
 	suite.Equal(found.UID, "1234")
 	suite.Equal(found.OrgID, "1234")
+	suite.Equal(found.Username, "foobar")
 	suite.WithinDuration(found.CreatedAt, time.Now(), 5*time.Second)
 }
 

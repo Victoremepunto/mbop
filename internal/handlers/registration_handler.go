@@ -25,6 +25,7 @@ type registrationCollection struct {
 type registrationResponse struct {
 	UID         string    `json:"uid"`
 	DisplayName string    `json:"display_name"`
+	Username    string    `json:"username"`
 	CreatedAt   time.Time `json:"created_at"`
 }
 
@@ -62,6 +63,7 @@ func RegistrationListHandler(w http.ResponseWriter, r *http.Request) {
 		out[i] = registrationResponse{
 			UID:         regs[i].UID,
 			DisplayName: regs[i].DisplayName,
+			Username:    regs[i].Username,
 			CreatedAt:   regs[i].CreatedAt,
 		}
 	}
@@ -103,6 +105,10 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 		doError(w, "user must be org admin to register satellite", 403)
 		return
 	}
+	if id.Identity.User.Username == "" {
+		do400(w, "[username] not present in identity header")
+		return
+	}
 
 	gatewayCN, err := getCertCN(r.Header.Get(CertHeader))
 	if err != nil {
@@ -124,6 +130,7 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, err = db.Create(&store.Registration{
 		OrgID:       id.Identity.OrgID,
+		Username:    id.Identity.User.Username,
 		UID:         *body.UID,
 		DisplayName: *body.DisplayName,
 	})
