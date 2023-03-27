@@ -2,7 +2,6 @@ package store
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/redhatinsights/mbop/internal/config"
@@ -14,11 +13,6 @@ var GetStore func() Store
 
 // persistent ref to an in-memory store if present
 var mem Store
-
-var (
-	ErrRegistrationAlreadyExists = errors.New("registration already exists")
-	ErrRegistrationNotFound      = errors.New("registration not found")
-)
 
 func SetupStore() error {
 	switch config.Get().StoreBackend {

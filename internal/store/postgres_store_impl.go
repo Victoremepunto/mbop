@@ -80,7 +80,7 @@ func (p *postgresStore) Create(r *Registration) (string, error) {
 		// constraint violation == 23505
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" {
-				return "", ErrRegistrationAlreadyExists
+				return "", ErrRegistrationAlreadyExists{Detail: pgErr.Detail}
 			}
 		} else {
 			return "", err
