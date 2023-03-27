@@ -15,6 +15,11 @@ type TokenResp struct {
 
 func TokenHandler(w http.ResponseWriter, r *http.Request) {
 	xrhid := identity.Get(r.Context()).Identity
+	if !xrhid.User.OrgAdmin {
+		doError(w, "user must be org admin to obtain satellite token", 403)
+		return
+	}
+
 	if xrhid.OrgID == "" {
 		do400(w, "Missing org_id in x-rh-identity")
 		return
