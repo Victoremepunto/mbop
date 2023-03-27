@@ -122,12 +122,6 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db := store.GetStore()
-	_, err = db.Find(id.Identity.OrgID, *body.UID)
-	if err == nil {
-		doError(w, "existing registration found", 409)
-		return
-	}
-
 	_, err = db.Create(&store.Registration{
 		OrgID:       id.Identity.OrgID,
 		Username:    id.Identity.User.Username,
@@ -135,8 +129,8 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 		DisplayName: *body.DisplayName,
 	})
 	if err != nil {
-		if errors.Is(err, store.ErrRegistrationAlreadyExists) {
-			doError(w, "existing registration found", 409)
+		if errors.Is(err, store.ErrRegistrationAlreadyExists{}) {
+			doError(w, err.Error(), 409)
 		} else {
 			do500(w, "failed to create registration: "+err.Error())
 		}

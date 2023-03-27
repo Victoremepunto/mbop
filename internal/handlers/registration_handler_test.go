@@ -181,7 +181,7 @@ func (suite *RegistrationTestSuite) TestExistingRegistrationCreate() {
 
 	status, rspBody := statusAndBodyFromReq(suite)
 	suite.Equal(http.StatusConflict, status)
-	suite.Equal("{\"message\":\"existing registration found\"}", rspBody)
+	suite.Equal("{\"message\":\"existing registration found: uid already exists\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestExistingUidCreate() {
@@ -200,7 +200,7 @@ func (suite *RegistrationTestSuite) TestExistingUidCreate() {
 
 	status, rspBody := statusAndBodyFromReq(suite)
 	suite.Equal(http.StatusConflict, status)
-	suite.Equal("{\"message\":\"existing registration found\"}", rspBody)
+	suite.Equal("{\"message\":\"existing registration found: uid already exists\"}", rspBody)
 }
 
 func (suite *RegistrationTestSuite) TestSuccessfulRegistrationCreate() {

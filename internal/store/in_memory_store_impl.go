@@ -37,17 +37,12 @@ func (m *inMemoryStore) FindByUID(uid string) (*Registration, error) {
 }
 
 func (m *inMemoryStore) Create(r *Registration) (string, error) {
-	x, _ := m.Find(r.OrgID, r.UID)
-	if x != nil {
-		return "", ErrRegistrationAlreadyExists
-	}
-
 	for i := range m.db {
 		if m.db[i].UID == r.UID {
-			return "", ErrRegistrationAlreadyExists
+			return "", ErrRegistrationAlreadyExists{Detail: "uid already exists"}
 		}
 		if m.db[i].DisplayName == r.DisplayName {
-			return "", ErrRegistrationAlreadyExists
+			return "", ErrRegistrationAlreadyExists{Detail: "display_name already exists"}
 		}
 	}
 
