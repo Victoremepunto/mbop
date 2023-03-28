@@ -69,7 +69,27 @@ func (suite *TestSuite) TestCreateWithExtra() {
 	suite.NotEqual("", id, "something funky with returning the id")
 }
 
-func (suite *TestSuite) TestCreateDuplicateDisplayName() {
+func (suite *TestSuite) TestCreateDuplicateDisplayNameSameOrg() {
+	r := Registration{
+		OrgID:       "1234",
+		Username:    "foobar",
+		UID:         "1234",
+		DisplayName: "dupe",
+	}
+	_, err := suite.store.Create(&r)
+	suite.Nil(err, "failed to insert")
+
+	r2 := Registration{
+		OrgID:       "1234",
+		Username:    "foobar",
+		UID:         "2345",
+		DisplayName: "dupe",
+	}
+	_, err = suite.store.Create(&r2)
+	suite.Error(err, "inserted successfully even when it shouldn't have")
+}
+
+func (suite *TestSuite) TestCreateDuplicateDisplayNameDifferentOrg() {
 	r := Registration{
 		OrgID:       "1234",
 		Username:    "foobar",
@@ -86,7 +106,7 @@ func (suite *TestSuite) TestCreateDuplicateDisplayName() {
 		DisplayName: "dupe",
 	}
 	_, err = suite.store.Create(&r2)
-	suite.Error(err, "inserted successfully even when it shouldn't have")
+	suite.Nil(err)
 }
 
 func (suite *TestSuite) TestDelete() {
