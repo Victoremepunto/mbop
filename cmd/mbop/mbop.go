@@ -2,9 +2,9 @@ package main
 
 import (
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/redhatinsights/mbop/internal/config"
 	"github.com/redhatinsights/mbop/internal/service/mailer"
 	"github.com/redhatinsights/platform-go-middlewares/identity"
 
@@ -14,6 +14,8 @@ import (
 	"github.com/redhatinsights/mbop/internal/middleware"
 	"github.com/redhatinsights/mbop/internal/store"
 )
+
+var conf = config.Get()
 
 func main() {
 	if err := l.Init(); err != nil {
@@ -55,19 +57,21 @@ func main() {
 		l.Log.Info("failed to init mailer module", "error", err)
 	}
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8090"
-	}
-
 	srv := http.Server{
-		Addr:              ":" + port,
+		Addr:              ":" + conf.Port,
 		ReadHeaderTimeout: 2 * time.Second,
 		Handler:           r,
 	}
 
-	l.Log.Info("Starting MBOP Server on", "port", port)
-	if err := srv.ListenAndServe(); err != nil {
-		l.Log.Error(err, "server couldn't start")
+	l.Log.Info("Starting MBOP Server on", "port", conf.Port, "tls", conf.UseTLS)
+
+	if conf.UseTLS {
+		if err := srv.ListenAndServeTLS(conf.CertDir+"/tls.crt", conf.CertDir+"/tls.key"); err != nil {
+			l.Log.Error(err, "server couldn't start")
+		}
+	} else {
+		if err := srv.ListenAndServe(); err != nil {
+			l.Log.Error(err, "server couldn't start")
+		}
 	}
 }
