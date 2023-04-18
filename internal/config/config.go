@@ -33,6 +33,10 @@ type MbopConfig struct {
 	DatabaseUser     string
 	DatabasePassword string
 	DatabaseName     string
+
+	Port    string
+	UseTLS  bool
+	CertDir string
 }
 
 var conf *MbopConfig
@@ -44,6 +48,20 @@ func Get() *MbopConfig {
 
 	disableCatchAll, _ := strconv.ParseBool(fetchWithDefault("DISABLE_CATCHALL", "false"))
 	debug, _ := strconv.ParseBool(fetchWithDefault("DEBUG", "false"))
+	certDir := fetchWithDefault("CERT_DIR", "/certs")
+
+	var port string
+	var tls bool
+	_, err := os.Stat(certDir + "/tls.crt")
+	if err != nil {
+		// we're just running plain HTTP
+		port = fetchWithDefault("PORT", "8090")
+	} else {
+		// ..otherwise, if the err is nil - we have a cert. lets get set up for
+		// TLS
+		port = fetchWithDefault("TLS_PORT", "8090")
+		tls = true
+	}
 
 	c := &MbopConfig{
 		UsersModule:     fetchWithDefault("USERS_MODULE", ""),
@@ -74,6 +92,10 @@ func Get() *MbopConfig {
 		PublicKey:              fetchWithDefault("TOKEN_PUBLIC_KEY", ""),
 		IsInternalLabel:        fetchWithDefault("IS_INTERNAL_LABEL", ""),
 		Debug:                  debug,
+
+		Port:    port,
+		UseTLS:  tls,
+		CertDir: certDir,
 	}
 
 	conf = c

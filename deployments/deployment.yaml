@@ -149,9 +149,21 @@ objects:
             limits:
               cpu: ${CPU_LIMIT}
               memory: ${MEMORY_LIMIT}
+          volumeMounts:
+          - name: envoy-tls
+            readOnly: true
+            mountPath: /certs
+        volumes:
+        - name: envoy-tls
+          secret:
+            secretName: mbop-serving-cert
+            defaultMode: 420
+            optional: true
 - apiVersion: v1
   kind: Service
   metadata:
+    annotations:
+      service.beta.openshift.io/serving-cert-secret-name: mbop-serving-cert
     labels:
       app: mbop
     name: mbop
@@ -163,9 +175,16 @@ objects:
       port: ${{PORT}}
       protocol: TCP
       targetPort: ${{PORT}}
+    - name: tls
+      port: ${{TLS_PORT}}
+      protocol: TCP
+      targetPort: ${{TLS_PORT}}
 parameters:
 - name: PORT
   description: Port the application will listen on
+  value: "8090"
+- name: TLS_PORT
+  description: Port the application will listen on if using TLS
   value: "8090"
 - name: REPLICAS
   description: The number of replicas to use in the deployment
@@ -237,3 +256,6 @@ parameters:
 - name: DEBUG
   description: Debug flag
   value: "false"
+- name: CERT_DIR
+  description: the base directory where ssl certs are stored
+  value: "/certs"
