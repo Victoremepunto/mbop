@@ -37,6 +37,8 @@ objects:
             value: "${KEYCLOAK_SCHEME}://${KEYCLOAK_HOST}:${KEYCLOAK_PORT}${KEYCLOAK_PATH}"
           - name: PORT
             value: "${PORT}"
+          - name: TLS_PORT
+            value: "${TLS_PORT}"
           - name: COGNITO_APP_CLIENT_ID
             valueFrom:
               secretKeyRef:
@@ -185,7 +187,7 @@ parameters:
   value: "8090"
 - name: TLS_PORT
   description: Port the application will listen on if using TLS
-  value: "8090"
+  value: "8890"
 - name: REPLICAS
   description: The number of replicas to use in the deployment
   value: '1'

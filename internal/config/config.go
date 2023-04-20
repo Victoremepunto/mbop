@@ -35,6 +35,7 @@ type MbopConfig struct {
 	DatabaseName     string
 
 	Port    string
+	TLSPort string
 	UseTLS  bool
 	CertDir string
 }
@@ -50,16 +51,9 @@ func Get() *MbopConfig {
 	debug, _ := strconv.ParseBool(fetchWithDefault("DEBUG", "false"))
 	certDir := fetchWithDefault("CERT_DIR", "/certs")
 
-	var port string
 	var tls bool
 	_, err := os.Stat(certDir + "/tls.crt")
-	if err != nil {
-		// we're just running plain HTTP
-		port = fetchWithDefault("PORT", "8090")
-	} else {
-		// ..otherwise, if the err is nil - we have a cert. lets get set up for
-		// TLS
-		port = fetchWithDefault("TLS_PORT", "8090")
+	if err == nil {
 		tls = true
 	}
 
@@ -93,7 +87,8 @@ func Get() *MbopConfig {
 		IsInternalLabel:        fetchWithDefault("IS_INTERNAL_LABEL", ""),
 		Debug:                  debug,
 
-		Port:    port,
+		Port:    fetchWithDefault("PORT", "8090"),
+		TLSPort: fetchWithDefault("TLS_PORT", "8890"),
 		UseTLS:  tls,
 		CertDir: certDir,
 	}
