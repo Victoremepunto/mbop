@@ -2,6 +2,9 @@ package main
 
 import (
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/redhatinsights/mbop/internal/config"
@@ -57,21 +60,37 @@ func main() {
 		l.Log.Info("failed to init mailer module", "error", err)
 	}
 
-	srv := http.Server{
-		Addr:              ":" + conf.Port,
-		ReadHeaderTimeout: 2 * time.Second,
-		Handler:           r,
-	}
+	// listen for OS signals so we can terminate when receiving one
+	interrupts := make(chan os.Signal, 1)
+	signal.Notify(interrupts, os.Interrupt, syscall.SIGTERM)
 
-	l.Log.Info("Starting MBOP Server on", "port", conf.Port, "tls", conf.UseTLS)
-
-	if conf.UseTLS {
-		if err := srv.ListenAndServeTLS(conf.CertDir+"/tls.crt", conf.CertDir+"/tls.key"); err != nil {
-			l.Log.Error(err, "server couldn't start")
+	go func() {
+		srv := http.Server{
+			Addr:              ":" + conf.Port,
+			ReadHeaderTimeout: 2 * time.Second,
+			Handler:           r,
 		}
-	} else {
+
+		l.Log.Info("Starting MBOP HTTP Listener", "port", conf.Port)
 		if err := srv.ListenAndServe(); err != nil {
 			l.Log.Error(err, "server couldn't start")
 		}
+	}()
+
+	if conf.UseTLS {
+		go func() {
+			srv := http.Server{
+				Addr:              ":" + conf.TLSPort,
+				ReadHeaderTimeout: 2 * time.Second,
+				Handler:           r,
+			}
+
+			l.Log.Info("Starting MBOP HTTPS Listener", "port", conf.TLSPort)
+			if err := srv.ListenAndServeTLS(conf.CertDir+"/tls.crt", conf.CertDir+"/tls.key"); err != nil {
+				l.Log.Error(err, "server couldn't start")
+			}
+		}()
 	}
+
+	<-interrupts
 }
