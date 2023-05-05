@@ -18,7 +18,7 @@ type JWTResp struct {
 
 func JWTV1Handler(w http.ResponseWriter, r *http.Request) {
 	switch config.Get().JwtModule {
-	case awsModule:
+	case awsModule, keycloakModule:
 		kid := r.URL.Query().Get("kid")
 		if kid == "" {
 			do400(w, "kid required to return correct pub key")
