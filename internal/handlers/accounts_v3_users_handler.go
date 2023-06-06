@@ -6,25 +6,26 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/redhatinsights/mbop/internal/config"
 	"github.com/redhatinsights/mbop/internal/service/ocm"
+	"github.com/redhatinsights/mbop/internal/service/ocm/keycloak"
 )
 
 func AccountsV3UsersHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	orgID := chi.URLParam(r, "orgID")
+	if orgID == "" {
+		do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/users")
+		return
+	}
+
+	q, err := initAccountV3UserQuery(r)
+	if err != nil {
+		do400(w, err.Error())
+		return
+	}
+
 	switch config.Get().UsersModule {
 	case amsModule, mockModule:
-		orgID := chi.URLParam(r, "orgID")
-		if orgID == "" {
-			do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/users")
-			return
-		}
-
-		q, err := initAccountV3UserQuery(r)
-		if err != nil {
-			do400(w, err.Error())
-			return
-		}
-
 		// Create new SDK client
 		client, err := ocm.NewOcmClient()
 		if err != nil {
@@ -65,7 +66,43 @@ func AccountsV3UsersHandler(w http.ResponseWriter, r *http.Request) {
 
 		r := usersToV3Response(u.Users)
 
+		client.CloseSdkConnection()
+
 		sendJSON(w, r.Responses)
+	case keycloakModule:
+		client, err := keycloak.NewKeyCloakClient()
+		if err != nil {
+			do400(w, err.Error())
+			return
+		}
+
+		err = client.InitKeycloakConnection()
+		if err != nil {
+			do500(w, "Can't build keycloak connection: "+err.Error())
+			return
+		}
+
+		token, err := client.GetAccessToken()
+		if err != nil {
+			do500(w, "Can't fetch keycloak token: "+err.Error())
+			return
+		}
+
+		u, err := client.GetAccountV3Users(orgID, token, q)
+		if err != nil {
+			do500(w, "Cant Retrieve Keycloak Accounts: "+err.Error())
+			return
+		}
+
+		if q.AdminOnly {
+			for i, user := range u.Users {
+				if !user.IsOrgAdmin {
+					u.RemoveUser(i)
+				}
+			}
+		}
+
+		sendJSON(w, u.Users) // usersToV3Response()
 	default:
 		// mbop server instance injected somewhere
 		// pass right through to the current handler

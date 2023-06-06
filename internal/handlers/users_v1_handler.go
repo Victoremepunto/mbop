@@ -7,6 +7,7 @@ import (
 
 	"github.com/redhatinsights/mbop/internal/config"
 	"github.com/redhatinsights/mbop/internal/service/ocm"
+	"github.com/redhatinsights/mbop/internal/service/ocm/keycloak"
 
 	"github.com/redhatinsights/mbop/internal/models"
 )
@@ -14,28 +15,28 @@ import (
 func UsersV1Handler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		do500(w, "failed to read request body: "+err.Error())
+		return
+	}
+	defer r.Body.Close()
+
+	var usernames models.UserBody
+	err = json.Unmarshal(body, &usernames)
+	if err != nil {
+		do400(w, "failed to parse request body: "+err.Error()+", request must include 'users': [] ")
+		return
+	}
+
+	q, err := initV1UserQuery(r)
+	if err != nil {
+		do400(w, err.Error())
+		return
+	}
+
 	switch config.Get().UsersModule {
 	case amsModule, mockModule:
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			do500(w, "failed to read request body: "+err.Error())
-			return
-		}
-		defer r.Body.Close()
-
-		var usernames models.UserBody
-		err = json.Unmarshal(body, &usernames)
-		if err != nil {
-			do400(w, "failed to parse request body: "+err.Error()+", request must include 'users': [] ")
-			return
-		}
-
-		q, err := initV1UserQuery(r)
-		if err != nil {
-			do400(w, err.Error())
-			return
-		}
-
 		// Create new SDK client
 		client, err := ocm.NewOcmClient()
 		if err != nil {
@@ -45,7 +46,7 @@ func UsersV1Handler(w http.ResponseWriter, r *http.Request) {
 
 		err = client.InitSdkConnection(ctx)
 		if err != nil {
-			do500(w, "Can't build connection: "+err.Error())
+			do500(w, "Can't build sdk connection: "+err.Error())
 			return
 		}
 
@@ -75,6 +76,33 @@ func UsersV1Handler(w http.ResponseWriter, r *http.Request) {
 		client.CloseSdkConnection()
 
 		sendJSON(w, u.Users)
+	case keycloakModule:
+		client, err := keycloak.NewKeyCloakClient()
+		if err != nil {
+			do400(w, err.Error())
+			return
+		}
+
+		err = client.InitKeycloakConnection()
+		if err != nil {
+			do500(w, "Can't build keycloak connection: "+err.Error())
+			return
+		}
+
+		token, err := client.GetAccessToken()
+		if err != nil {
+			do500(w, "Can't fetch keycloak token: "+err.Error())
+			return
+		}
+
+		u, err := client.GetUsers(token, usernames, q)
+		if err != nil {
+			do500(w, "Cant Retrieve Keycloak Accounts: "+err.Error())
+			return
+		}
+
+		sendJSON(w, u.Users)
+		return
 	default:
 		// mbop server instance injected somewhere
 		// pass right through to the current handler
