@@ -15,11 +15,11 @@ import (
 	"github.com/redhatinsights/mbop/internal/models"
 )
 
-type KeyCloakClient struct {
+type Client struct {
 	client *http.Client
 }
 
-func (keyCloak *KeyCloakClient) InitKeycloakConnection() error {
+func (keyCloak *Client) InitKeycloakConnection() error {
 	keyCloak.client = &http.Client{
 		Timeout: time.Duration(config.Get().KeyCloakTimeout * int64(time.Second)),
 	}
@@ -27,7 +27,7 @@ func (keyCloak *KeyCloakClient) InitKeycloakConnection() error {
 	return nil
 }
 
-func (keyCloak *KeyCloakClient) GetUsers(token string, u models.UserBody, q models.UserV1Query) (models.Users, error) {
+func (keyCloak *Client) GetUsers(token string, u models.UserBody, q models.UserV1Query) (models.Users, error) {
 	users := models.Users{Users: []models.User{}}
 	url, err := createV1RequestURL(u, q)
 	if err != nil {
@@ -49,7 +49,7 @@ func (keyCloak *KeyCloakClient) GetUsers(token string, u models.UserBody, q mode
 	return keycloakResponseToUsers(unmarshaledResponse.Users), err
 }
 
-func (keyCloak *KeyCloakClient) GetAccountV3Users(orgID string, token string, q models.UserV3Query) (models.Users, error) {
+func (keyCloak *Client) GetAccountV3Users(orgID string, token string, q models.UserV3Query) (models.Users, error) {
 	users := models.Users{Users: []models.User{}}
 	url, err := createV3UsersRequestURL(orgID, q)
 	if err != nil {
@@ -71,7 +71,7 @@ func (keyCloak *KeyCloakClient) GetAccountV3Users(orgID string, token string, q 
 	return keycloakResponseToUsers(unmarshaledResponse.Users), nil
 }
 
-func (keyCloak *KeyCloakClient) GetAccessToken() (string, error) {
+func (keyCloak *Client) GetAccessToken() (string, error) {
 	token := models.KeycloakToken{}
 	url, err := createTokenURL()
 	if err != nil {
@@ -100,7 +100,7 @@ func (keyCloak *KeyCloakClient) GetAccessToken() (string, error) {
 	return token.AccessToken, nil
 }
 
-func (keyCloak *KeyCloakClient) sendKeycloakGetRequest(url *url.URL, token string) ([]byte, error) {
+func (keyCloak *Client) sendKeycloakGetRequest(url *url.URL, token string) ([]byte, error) {
 	var responseBody []byte
 
 	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
@@ -164,6 +164,8 @@ func createV1RequestURL(usernames models.UserBody, q models.UserV1Query) (*url.U
 		queryParams.Add("direction", q.SortOrder)
 	}
 
+	queryParams.Add("usernames", createUsernamesQuery(usernames.Users))
+
 	url.RawQuery = queryParams.Encode()
 	return url, err
 }
@@ -186,6 +188,20 @@ func createV3UsersRequestURL(orgID string, q models.UserV3Query) (*url.URL, erro
 	url.RawQuery = queryParams.Encode()
 
 	return url, err
+}
+
+func createUsernamesQuery(usernames []string) string {
+	usernameQuery := ""
+
+	for _, username := range usernames {
+		if usernameQuery == "" {
+			usernameQuery += username
+		} else {
+			usernameQuery += fmt.Sprintf(",%s", username)
+		}
+	}
+
+	return usernameQuery
 }
 
 func keycloakResponseToUsers(r []models.KeycloakResponse) models.Users {

@@ -22,7 +22,7 @@ func NewKeyCloakClient() (KeyCloak, error) {
 
 	switch config.Get().UsersModule {
 	case keyCloakModule:
-		client = &KeyCloakClient{}
+		client = &Client{}
 	default:
 		return nil, fmt.Errorf("unsupported users module %q", config.Get().UsersModule)
 	}

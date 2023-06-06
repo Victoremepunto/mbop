@@ -59,7 +59,7 @@ func Get() *MbopConfig {
 	disableCatchAll, _ := strconv.ParseBool(fetchWithDefault("DISABLE_CATCHALL", "false"))
 	debug, _ := strconv.ParseBool(fetchWithDefault("DEBUG", "false"))
 	certDir := fetchWithDefault("CERT_DIR", "/certs")
-	keyCloakTimeout, _ := strconv.ParseInt(fetchWithDefault("KEYCLOAK_TIMEOUT", "1000"), 0, 10000)
+	keyCloakTimeout, _ := strconv.ParseInt(fetchWithDefault("KEYCLOAK_TIMEOUT", "60"), 0, 64)
 
 	var tls bool
 	_, err := os.Stat(certDir + "/tls.crt")
