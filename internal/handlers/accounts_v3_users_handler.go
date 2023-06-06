@@ -12,20 +12,20 @@ import (
 func AccountsV3UsersHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	orgID := chi.URLParam(r, "orgID")
-	if orgID == "" {
-		do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/users")
-		return
-	}
-
-	q, err := initAccountV3UserQuery(r)
-	if err != nil {
-		do400(w, err.Error())
-		return
-	}
-
 	switch config.Get().UsersModule {
 	case amsModule, mockModule:
+		orgID := chi.URLParam(r, "orgID")
+		if orgID == "" {
+			do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/users")
+			return
+		}
+
+		q, err := initAccountV3UserQuery(r)
+		if err != nil {
+			do400(w, err.Error())
+			return
+		}
+
 		// Create new SDK client
 		client, err := ocm.NewOcmClient()
 		if err != nil {
@@ -70,6 +70,18 @@ func AccountsV3UsersHandler(w http.ResponseWriter, r *http.Request) {
 
 		sendJSON(w, r.Responses)
 	case keycloakModule:
+		orgID := chi.URLParam(r, "orgID")
+		if orgID == "" {
+			do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/users")
+			return
+		}
+
+		q, err := initAccountV3UserQuery(r)
+		if err != nil {
+			do400(w, err.Error())
+			return
+		}
+
 		client, err := keycloak.NewKeyCloakClient()
 		if err != nil {
 			do400(w, err.Error())

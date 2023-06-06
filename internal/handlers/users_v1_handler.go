@@ -15,28 +15,28 @@ import (
 func UsersV1Handler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		do500(w, "failed to read request body: "+err.Error())
-		return
-	}
-	defer r.Body.Close()
-
-	var usernames models.UserBody
-	err = json.Unmarshal(body, &usernames)
-	if err != nil {
-		do400(w, "failed to parse request body: "+err.Error()+", request must include 'users': [] ")
-		return
-	}
-
-	q, err := initV1UserQuery(r)
-	if err != nil {
-		do400(w, err.Error())
-		return
-	}
-
 	switch config.Get().UsersModule {
 	case amsModule, mockModule:
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			do500(w, "failed to read request body: "+err.Error())
+			return
+		}
+		defer r.Body.Close()
+
+		var usernames models.UserBody
+		err = json.Unmarshal(body, &usernames)
+		if err != nil {
+			do400(w, "failed to parse request body: "+err.Error()+", request must include 'users': [] ")
+			return
+		}
+
+		q, err := initV1UserQuery(r)
+		if err != nil {
+			do400(w, err.Error())
+			return
+		}
+
 		// Create new SDK client
 		client, err := ocm.NewOcmClient()
 		if err != nil {
@@ -77,6 +77,26 @@ func UsersV1Handler(w http.ResponseWriter, r *http.Request) {
 
 		sendJSON(w, u.Users)
 	case keycloakModule:
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			do500(w, "failed to read request body: "+err.Error())
+			return
+		}
+		defer r.Body.Close()
+
+		var usernames models.UserBody
+		err = json.Unmarshal(body, &usernames)
+		if err != nil {
+			do400(w, "failed to parse request body: "+err.Error()+", request must include 'users': [] ")
+			return
+		}
+
+		q, err := initV1UserQuery(r)
+		if err != nil {
+			do400(w, err.Error())
+			return
+		}
+
 		client, err := keycloak.NewKeyCloakClient()
 		if err != nil {
 			do400(w, err.Error())

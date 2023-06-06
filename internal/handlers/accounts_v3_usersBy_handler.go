@@ -15,39 +15,39 @@ import (
 func AccountsV3UsersByHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	orgID := chi.URLParam(r, "orgID")
-	if orgID == "" {
-		do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/usersBy")
-		return
-	}
-
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		do500(w, "failed to read request body: "+err.Error())
-		return
-	}
-	defer r.Body.Close()
-
-	var usersByBody models.UsersByBody
-	err = json.Unmarshal(body, &usersByBody)
-	if err != nil {
-		do400(w, "failed to parse request body: "+err.Error())
-		return
-	}
-
-	if usersByBody == (models.UsersByBody{}) {
-		do400(w, "request must include 'primaryEmail', 'emailStartsWith', or 'principalStartsWith'")
-		return
-	}
-
-	q, err := initAccountV3UserQuery(r)
-	if err != nil {
-		do400(w, err.Error())
-		return
-	}
-
 	switch config.Get().UsersModule {
 	case amsModule, mockModule:
+		orgID := chi.URLParam(r, "orgID")
+		if orgID == "" {
+			do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/usersBy")
+			return
+		}
+
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			do500(w, "failed to read request body: "+err.Error())
+			return
+		}
+		defer r.Body.Close()
+
+		var usersByBody models.UsersByBody
+		err = json.Unmarshal(body, &usersByBody)
+		if err != nil {
+			do400(w, "failed to parse request body: "+err.Error())
+			return
+		}
+
+		if usersByBody == (models.UsersByBody{}) {
+			do400(w, "request must include 'primaryEmail', 'emailStartsWith', or 'principalStartsWith'")
+			return
+		}
+
+		q, err := initAccountV3UserQuery(r)
+		if err != nil {
+			do400(w, err.Error())
+			return
+		}
+
 		// Create new SDK client
 		client, err := ocm.NewOcmClient()
 		if err != nil {
@@ -92,6 +92,37 @@ func AccountsV3UsersByHandler(w http.ResponseWriter, r *http.Request) {
 
 		sendJSON(w, r.Responses)
 	case keycloakModule:
+		orgID := chi.URLParam(r, "orgID")
+		if orgID == "" {
+			do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/usersBy")
+			return
+		}
+
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			do500(w, "failed to read request body: "+err.Error())
+			return
+		}
+		defer r.Body.Close()
+
+		var usersByBody models.UsersByBody
+		err = json.Unmarshal(body, &usersByBody)
+		if err != nil {
+			do400(w, "failed to parse request body: "+err.Error())
+			return
+		}
+
+		if usersByBody == (models.UsersByBody{}) {
+			do400(w, "request must include 'primaryEmail', 'emailStartsWith', or 'principalStartsWith'")
+			return
+		}
+
+		q, err := initAccountV3UserQuery(r)
+		if err != nil {
+			do400(w, err.Error())
+			return
+		}
+
 		client, err := keycloak.NewKeyCloakClient()
 		if err != nil {
 			do400(w, err.Error())
