@@ -205,7 +205,7 @@ func createUsernamesQuery(usernames []string) string {
 }
 
 func keycloakResponseToUsers(r []models.KeycloakResponse) models.Users {
-	users := models.Users{}
+	users := models.Users{Users: []models.User{}}
 
 	for _, response := range r {
 		users.AddUser(models.User{
