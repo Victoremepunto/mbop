@@ -1,15 +1,11 @@
 package handlers
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/redhatinsights/mbop/internal/config"
+	"github.com/redhatinsights/mbop/internal/service/keycloak"
 	"github.com/redhatinsights/mbop/internal/service/ocm"
-	"github.com/redhatinsights/mbop/internal/service/ocm/keycloak"
-
-	"github.com/redhatinsights/mbop/internal/models"
 )
 
 func UsersV1Handler(w http.ResponseWriter, r *http.Request) {
@@ -17,18 +13,9 @@ func UsersV1Handler(w http.ResponseWriter, r *http.Request) {
 
 	switch config.Get().UsersModule {
 	case amsModule, mockModule:
-		body, err := io.ReadAll(r.Body)
+		usernames, err := getUsernamesFromRequestBody(r)
 		if err != nil {
-			do500(w, "failed to read request body: "+err.Error())
-			return
-		}
-		defer r.Body.Close()
-
-		var usernames models.UserBody
-		err = json.Unmarshal(body, &usernames)
-		if err != nil {
-			do400(w, "failed to parse request body: "+err.Error()+", request must include 'users': [] ")
-			return
+			do400(w, err.Error())
 		}
 
 		q, err := initV1UserQuery(r)
@@ -77,18 +64,9 @@ func UsersV1Handler(w http.ResponseWriter, r *http.Request) {
 
 		sendJSON(w, u.Users)
 	case keycloakModule:
-		body, err := io.ReadAll(r.Body)
+		usernames, err := getUsernamesFromRequestBody(r)
 		if err != nil {
-			do500(w, "failed to read request body: "+err.Error())
-			return
-		}
-		defer r.Body.Close()
-
-		var usernames models.UserBody
-		err = json.Unmarshal(body, &usernames)
-		if err != nil {
-			do400(w, "failed to parse request body: "+err.Error()+", request must include 'users': [] ")
-			return
+			do400(w, err.Error())
 		}
 
 		q, err := initV1UserQuery(r)

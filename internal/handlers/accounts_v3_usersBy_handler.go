@@ -1,15 +1,12 @@
 package handlers
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/redhatinsights/mbop/internal/config"
 	"github.com/redhatinsights/mbop/internal/models"
+	"github.com/redhatinsights/mbop/internal/service/keycloak"
 	"github.com/redhatinsights/mbop/internal/service/ocm"
-	"github.com/redhatinsights/mbop/internal/service/ocm/keycloak"
 )
 
 func AccountsV3UsersByHandler(w http.ResponseWriter, r *http.Request) {
@@ -17,23 +14,15 @@ func AccountsV3UsersByHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch config.Get().UsersModule {
 	case amsModule, mockModule:
-		orgID := chi.URLParam(r, "orgID")
+		orgID := getOrgID(r)
 		if orgID == "" {
 			do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/usersBy")
 			return
 		}
 
-		body, err := io.ReadAll(r.Body)
+		usersByBody, err := getUsersByBody(r)
 		if err != nil {
-			do500(w, "failed to read request body: "+err.Error())
-			return
-		}
-		defer r.Body.Close()
-
-		var usersByBody models.UsersByBody
-		err = json.Unmarshal(body, &usersByBody)
-		if err != nil {
-			do400(w, "failed to parse request body: "+err.Error())
+			do400(w, err.Error())
 			return
 		}
 
@@ -92,23 +81,15 @@ func AccountsV3UsersByHandler(w http.ResponseWriter, r *http.Request) {
 
 		sendJSON(w, r.Responses)
 	case keycloakModule:
-		orgID := chi.URLParam(r, "orgID")
+		orgID := getOrgID(r)
 		if orgID == "" {
 			do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/usersBy")
 			return
 		}
 
-		body, err := io.ReadAll(r.Body)
+		usersByBody, err := getUsersByBody(r)
 		if err != nil {
-			do500(w, "failed to read request body: "+err.Error())
-			return
-		}
-		defer r.Body.Close()
-
-		var usersByBody models.UsersByBody
-		err = json.Unmarshal(body, &usersByBody)
-		if err != nil {
-			do400(w, "failed to parse request body: "+err.Error())
+			do400(w, err.Error())
 			return
 		}
 

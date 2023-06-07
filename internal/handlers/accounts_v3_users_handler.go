@@ -3,10 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/redhatinsights/mbop/internal/config"
+	"github.com/redhatinsights/mbop/internal/service/keycloak"
 	"github.com/redhatinsights/mbop/internal/service/ocm"
-	"github.com/redhatinsights/mbop/internal/service/ocm/keycloak"
 )
 
 func AccountsV3UsersHandler(w http.ResponseWriter, r *http.Request) {
@@ -14,7 +13,7 @@ func AccountsV3UsersHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch config.Get().UsersModule {
 	case amsModule, mockModule:
-		orgID := chi.URLParam(r, "orgID")
+		orgID := getOrgID(r)
 		if orgID == "" {
 			do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/users")
 			return
@@ -70,7 +69,7 @@ func AccountsV3UsersHandler(w http.ResponseWriter, r *http.Request) {
 
 		sendJSON(w, r.Responses)
 	case keycloakModule:
-		orgID := chi.URLParam(r, "orgID")
+		orgID := getOrgID(r)
 		if orgID == "" {
 			do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/users")
 			return

@@ -72,7 +72,7 @@ func (keyCloak *Client) GetAccountV3Users(orgID string, token string, q models.U
 }
 
 func (keyCloak *Client) GetAccessToken() (string, error) {
-	token := models.KeycloakToken{}
+	token := models.KeycloakTokenObject{}
 	url, err := createTokenURL()
 	if err != nil {
 		return "", err
