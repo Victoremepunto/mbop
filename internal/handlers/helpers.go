@@ -164,7 +164,7 @@ func getUsersByBody(r *http.Request) (models.UsersByBody, error) {
 	return usersByBody, nil
 }
 
-func getOrgID(r *http.Request) string {
+func getOrgIDFromPath(r *http.Request) string {
 	return chi.URLParam(r, "orgID")
 }
 

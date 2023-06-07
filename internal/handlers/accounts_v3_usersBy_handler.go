@@ -14,7 +14,7 @@ func AccountsV3UsersByHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch config.Get().UsersModule {
 	case amsModule, mockModule:
-		orgID := getOrgID(r)
+		orgID := getOrgIDFromPath(r)
 		if orgID == "" {
 			do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/usersBy")
 			return
@@ -81,7 +81,7 @@ func AccountsV3UsersByHandler(w http.ResponseWriter, r *http.Request) {
 
 		sendJSON(w, r.Responses)
 	case keycloakModule:
-		orgID := getOrgID(r)
+		orgID := getOrgIDFromPath(r)
 		if orgID == "" {
 			do400(w, "Request URL must include orgID: /v3/accounts/{orgID}/usersBy")
 			return
