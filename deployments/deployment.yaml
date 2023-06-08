@@ -143,8 +143,8 @@ objects:
             value: ${KEYCLOAK_PORT}
           - name: KEYCLOAK_TIMEOUT
             value: ${KEYCLOAK_TIMEOUT}
-          - name: KEYCLOAK_PROTOCOl
-            value: ${KEYCLOAK_PROTOCOL}
+          - name: KEYCLOAK_SCHEME
+            value: ${KEYCLOAK_SCHEME}
           - name: KEYCLOAK_TOKEN_GRANT_TYPE
             value: ${KEYCLOAK_TOKEN_GRANT_TYPE}
           - name: KEYCLOAK_TOKEN_USERNAME
@@ -223,7 +223,7 @@ parameters:
   description: Image tag
   required: true
   value: latest
-- name: KEYCLOAK_PROTOCOL
+- name: KEYCLOAK_SCHEME
   description: keycloak's scheme (http/s)
   value: http
 - name: KEYCLOAK_HOST
@@ -232,9 +232,6 @@ parameters:
 - name: KEYCLOAK_PORT
   description: keycloak's port
   value: "12345"
-- name: KEYCLOAK_PATH
-  description: keycloak's path if behind a reverse proxy
-  value: ""
 - name: KEYCLOAK_TIMEOUT
   description: keycloak client's timeout value
   value: "10"
