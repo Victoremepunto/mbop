@@ -3,10 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
 	l "github.com/redhatinsights/mbop/internal/logger"
 	"github.com/redhatinsights/mbop/internal/models"
 )
@@ -125,6 +127,45 @@ func usersToV3Response(users []models.User) models.UserV3Responses {
 	}
 
 	return r
+}
+
+func getUsernamesFromRequestBody(r *http.Request) (models.UserBody, error) {
+	var usernames models.UserBody
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return usernames, fmt.Errorf("failed to read request body: " + err.Error())
+	}
+	defer r.Body.Close()
+
+	err = json.Unmarshal(body, &usernames)
+	if err != nil {
+		return usernames, fmt.Errorf("failed to parse request body: " + err.Error() + ", request must include 'users': [] ")
+	}
+
+	return usernames, nil
+}
+
+func getUsersByBody(r *http.Request) (models.UsersByBody, error) {
+	var usersByBody models.UsersByBody
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return usersByBody, fmt.Errorf("failed to read request body: " + err.Error())
+	}
+
+	defer r.Body.Close()
+
+	err = json.Unmarshal(body, &usersByBody)
+	if err != nil {
+		return usersByBody, fmt.Errorf("failed to parse request body: " + err.Error())
+	}
+
+	return usersByBody, nil
+}
+
+func getOrgIDFromPath(r *http.Request) string {
+	return chi.URLParam(r, "orgID")
 }
 
 func getSortOrder(r *http.Request) (string, error) {

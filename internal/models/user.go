@@ -8,6 +8,19 @@ type UserV3Responses struct {
 	Responses []UserV3Response `json:"responses,omitempty"`
 }
 
+type KeycloakResponses struct {
+	Meta  KeycloakMetadata   `json:"meta"`
+	Users []KeycloakResponse `json:"users,omitempty"`
+}
+
+type KeycloakMetadata struct {
+	First    string `json:"first"`
+	Last     string `json:"last"`
+	Next     string `json:"next"`
+	Previous string `json:"previous"`
+	Total    int    `json:"total"`
+}
+
 type User struct {
 	Username      string `json:"username"`
 	ID            string `json:"id"`
@@ -24,6 +37,22 @@ type User struct {
 	DisplayName   string `json:"display_name"`
 	Entitlements  string `json:"entitlements"`
 	Type          string `json:"type"`
+}
+
+type KeycloakResponse struct {
+	Attributes map[string][]string `json:"attributes"`
+	Created    string              `json:"created"`
+	Email      string              `json:"email"`
+	IsInternal bool                `json:"is_internal"`
+	Modified   string              `json:"modified"`
+	OrgAdmin   bool                `json:"org_admin"`
+	OrgID      string              `json:"org_id"`
+	Type       string              `json:"type"`
+	Username   string              `json:"username"`
+	UserID     string              `json:"user_id"`
+	FirstName  string              `json:"firstName"`
+	LastName   string              `json:"lastName"`
+	ID         string              `json:"id"`
 }
 
 type UserV3Response struct {

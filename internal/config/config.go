@@ -27,6 +27,15 @@ type MbopConfig struct {
 	IsInternalLabel        string
 	Debug                  bool
 
+	KeyCloakScheme         string
+	KeyCloakHost           string
+	KeyCloakPort           string
+	KeyCloakTimeout        int64
+	KeyCloakTokenUsername  string
+	KeyCloakTokenPassword  string
+	KeyCloakTokenGrantType string
+	KeyCloakTokenClientID  string
+
 	StoreBackend     string
 	DatabaseHost     string
 	DatabasePort     string
@@ -50,6 +59,7 @@ func Get() *MbopConfig {
 	disableCatchAll, _ := strconv.ParseBool(fetchWithDefault("DISABLE_CATCHALL", "false"))
 	debug, _ := strconv.ParseBool(fetchWithDefault("DEBUG", "false"))
 	certDir := fetchWithDefault("CERT_DIR", "/certs")
+	keyCloakTimeout, _ := strconv.ParseInt(fetchWithDefault("KEYCLOAK_TIMEOUT", "60"), 0, 64)
 
 	var tls bool
 	_, err := os.Stat(certDir + "/tls.crt")
@@ -86,6 +96,15 @@ func Get() *MbopConfig {
 		PublicKey:              fetchWithDefault("TOKEN_PUBLIC_KEY", ""),
 		IsInternalLabel:        fetchWithDefault("IS_INTERNAL_LABEL", ""),
 		Debug:                  debug,
+
+		KeyCloakHost:           fetchWithDefault("KEYCLOAK_HOST", "localhost"),
+		KeyCloakPort:           fetchWithDefault("KEYCLOAK_PORT", "8000"),
+		KeyCloakScheme:         fetchWithDefault("KEYCLOAK_SCHEME", "http"),
+		KeyCloakTimeout:        keyCloakTimeout,
+		KeyCloakTokenUsername:  fetchWithDefault("KEYCLOAK_TOKEN_USERNAME", "admin"),
+		KeyCloakTokenPassword:  fetchWithDefault("KEYCLOAK_TOKEN_PASSWORD", "admin"),
+		KeyCloakTokenGrantType: fetchWithDefault("KEYCLOAK_TOKEN_GRANT_TYPE", "password"),
+		KeyCloakTokenClientID:  fetchWithDefault("KEYCLOAK_TOKEN_CLIENT_ID", "admin-cli"),
 
 		Port:    fetchWithDefault("PORT", "8090"),
 		TLSPort: fetchWithDefault("TLS_PORT", "8890"),
