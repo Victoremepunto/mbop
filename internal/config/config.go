@@ -27,7 +27,7 @@ type MbopConfig struct {
 	IsInternalLabel        string
 	Debug                  bool
 
-	KeyCloakProtocol       string
+	KeyCloakScheme         string
 	KeyCloakHost           string
 	KeyCloakPort           string
 	KeyCloakTimeout        int64
@@ -99,7 +99,7 @@ func Get() *MbopConfig {
 
 		KeyCloakHost:           fetchWithDefault("KEYCLOAK_HOST", "localhost"),
 		KeyCloakPort:           fetchWithDefault("KEYCLOAK_PORT", "8000"),
-		KeyCloakProtocol:       fetchWithDefault("KEYCLOAK_PROTOCOL", "http"),
+		KeyCloakScheme:         fetchWithDefault("KEYCLOAK_SCHEME", "http"),
 		KeyCloakTimeout:        keyCloakTimeout,
 		KeyCloakTokenUsername:  fetchWithDefault("KEYCLOAK_TOKEN_USERNAME", "admin"),
 		KeyCloakTokenPassword:  fetchWithDefault("KEYCLOAK_TOKEN_PASSWORD", "admin"),
