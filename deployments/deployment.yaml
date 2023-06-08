@@ -232,6 +232,9 @@ parameters:
 - name: KEYCLOAK_PORT
   description: keycloak's port
   value: "12345"
+- name: KEYCLOAK_PATH
+  description: keycloak's path if behind a reverse proxy
+  value: ""
 - name: KEYCLOAK_TIMEOUT
   description: keycloak client's timeout value
   value: "10"
