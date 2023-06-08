@@ -137,6 +137,34 @@ objects:
             value: ${IS_INTERNAL_LABEL}
           - name: DEBUG
             value: ${DEBUG}
+          - name: KEYCLOAK_HOST
+            value: ${KEYCLOAK_HOST}
+          - name: KEYCLOAK_PORT
+            value: ${KEYCLOAK_PORT}
+          - name: KEYCLOAK_TIMEOUT
+            value: ${KEYCLOAK_TIMEOUT}
+          - name: KEYCLOAK_PROTOCOl
+            value: ${KEYCLOAK_PROTOCOL}
+          - name: KEYCLOAK_TOKEN_GRANT_TYPE
+            value: ${KEYCLOAK_TOKEN_GRANT_TYPE}
+          - name: KEYCLOAK_TOKEN_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: keycloak
+                key: username
+                optional: true
+          - name: KEYCLOAK_TOKEN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: keycloak
+                key: password
+                optional: true
+          - name: KEYCLOAK_TOKEN_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: keycloak
+                key: client_id
+                optional: true
           image: quay.io/cloudservices/mbop:${IMAGE_TAG}
           imagePullPolicy: IfNotPresent
           name: mbop
@@ -195,7 +223,7 @@ parameters:
   description: Image tag
   required: true
   value: latest
-- name: KEYCLOAK_SCHEME
+- name: KEYCLOAK_PROTOCOL
   description: keycloak's scheme (http/s)
   value: http
 - name: KEYCLOAK_HOST
@@ -207,6 +235,12 @@ parameters:
 - name: KEYCLOAK_PATH
   description: keycloak's path if behind a reverse proxy
   value: ""
+- name: KEYCLOAK_TIMEOUT
+  description: keycloak client's timeout value
+  value: "10"
+- name: KEYCLOAK_TOKEN_GRANT_TYPE
+  description: grant type value for keycloak token request
+  value: password
 - name: MEMORY_LIMIT
   description: memory limit for mbop pod
   value: 512Mi
