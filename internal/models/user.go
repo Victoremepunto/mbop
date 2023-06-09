@@ -50,8 +50,8 @@ type KeycloakResponse struct {
 	Type       string              `json:"type"`
 	Username   string              `json:"username"`
 	UserID     string              `json:"user_id"`
-	FirstName  string              `json:"firstName"`
-	LastName   string              `json:"lastName"`
+	FirstName  string              `json:"first_name"`
+	LastName   string              `json:"last_name"`
 	ID         string              `json:"id"`
 }
 
