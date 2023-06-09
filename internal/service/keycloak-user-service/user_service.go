@@ -100,7 +100,7 @@ func (userService *UserServiceClient) sendKeycloakGetRequest(url *url.URL, token
 
 // MAKE response to users function to massage data back to regular format
 func createV1RequestURL(usernames models.UserBody, q models.UserV1Query) (*url.URL, error) {
-	url, err := url.Parse(fmt.Sprintf("%s://%s:%s/users?limit=100", config.Get().KeyCloakUserServiceScheme, config.Get().KeyCloakUserServiceHost, config.Get().KeyCloakUserServicePort))
+	url, err := url.Parse(fmt.Sprintf("%s://%s%s/users?limit=100", config.Get().KeyCloakUserServiceScheme, config.Get().KeyCloakUserServiceHost, config.Get().KeyCloakUserServicePort))
 	if err != nil {
 		return nil, fmt.Errorf("error creating (keycloak) /users url: %s", err)
 	}
@@ -122,7 +122,7 @@ func createV1RequestURL(usernames models.UserBody, q models.UserV1Query) (*url.U
 }
 
 func createV3UsersRequestURL(orgID string, q models.UserV3Query) (*url.URL, error) {
-	url, err := url.Parse(fmt.Sprintf("%s://%s:%s/users", config.Get().KeyCloakUserServiceScheme, config.Get().KeyCloakUserServiceHost, config.Get().KeyCloakUserServicePort))
+	url, err := url.Parse(fmt.Sprintf("%s://%s%s/users", config.Get().KeyCloakUserServiceScheme, config.Get().KeyCloakUserServiceHost, config.Get().KeyCloakUserServicePort))
 	if err != nil {
 		return nil, fmt.Errorf("error creating (keycloak) /v3/users url: %s", err)
 	}
