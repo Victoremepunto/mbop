@@ -13,11 +13,11 @@ import (
 	"github.com/redhatinsights/mbop/internal/models"
 )
 
-type KeycloakClient struct {
+type Client struct {
 	client *http.Client
 }
 
-func (keycloak *KeycloakClient) InitKeycloakConnection() error {
+func (keycloak *Client) InitKeycloakConnection() error {
 	keycloak.client = &http.Client{
 		Timeout: time.Duration(config.Get().KeyCloakTimeout * int64(time.Second)),
 	}
@@ -25,7 +25,7 @@ func (keycloak *KeycloakClient) InitKeycloakConnection() error {
 	return nil
 }
 
-func (keycloak *KeycloakClient) GetAccessToken() (string, error) {
+func (keycloak *Client) GetAccessToken() (string, error) {
 	token := models.KeycloakTokenObject{}
 	url, err := createTokenURL()
 	if err != nil {

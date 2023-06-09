@@ -6,7 +6,7 @@ type KeyCloak interface {
 }
 
 func NewKeyCloakClient() KeyCloak {
-	client := &KeycloakClient{}
+	client := &Client{}
 
 	return client
 }
