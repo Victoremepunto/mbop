@@ -27,14 +27,17 @@ type MbopConfig struct {
 	IsInternalLabel        string
 	Debug                  bool
 
-	KeyCloakScheme         string
-	KeyCloakHost           string
-	KeyCloakPort           string
-	KeyCloakTimeout        int64
-	KeyCloakTokenUsername  string
-	KeyCloakTokenPassword  string
-	KeyCloakTokenGrantType string
-	KeyCloakTokenClientID  string
+	KeyCloakUserServiceScheme  string
+	KeyCloakUserServiceHost    string
+	KeyCloakUserServicePort    string
+	KeyCloakUserServiceTimeout int64
+	KeyCloakTimeout            int64
+	KeyCloakTokenURL           string
+	KeyCloakTokenPath          string
+	KeyCloakTokenUsername      string
+	KeyCloakTokenPassword      string
+	KeyCloakTokenGrantType     string
+	KeyCloakTokenClientID      string
 
 	StoreBackend     string
 	DatabaseHost     string
@@ -60,6 +63,7 @@ func Get() *MbopConfig {
 	debug, _ := strconv.ParseBool(fetchWithDefault("DEBUG", "false"))
 	certDir := fetchWithDefault("CERT_DIR", "/certs")
 	keyCloakTimeout, _ := strconv.ParseInt(fetchWithDefault("KEYCLOAK_TIMEOUT", "60"), 0, 64)
+	userServiceTimeout, _ := strconv.ParseInt(fetchWithDefault("KEYCLOAK_USER_SERVICE_TIMEOUT", "60"), 0, 64)
 
 	var tls bool
 	_, err := os.Stat(certDir + "/tls.crt")
@@ -97,14 +101,17 @@ func Get() *MbopConfig {
 		IsInternalLabel:        fetchWithDefault("IS_INTERNAL_LABEL", ""),
 		Debug:                  debug,
 
-		KeyCloakHost:           fetchWithDefault("KEYCLOAK_HOST", "localhost"),
-		KeyCloakPort:           fetchWithDefault("KEYCLOAK_PORT", ":8000"),
-		KeyCloakScheme:         fetchWithDefault("KEYCLOAK_SCHEME", "http"),
-		KeyCloakTimeout:        keyCloakTimeout,
-		KeyCloakTokenUsername:  fetchWithDefault("KEYCLOAK_TOKEN_USERNAME", "admin"),
-		KeyCloakTokenPassword:  fetchWithDefault("KEYCLOAK_TOKEN_PASSWORD", "admin"),
-		KeyCloakTokenGrantType: fetchWithDefault("KEYCLOAK_TOKEN_GRANT_TYPE", "password"),
-		KeyCloakTokenClientID:  fetchWithDefault("KEYCLOAK_TOKEN_CLIENT_ID", "admin-cli"),
+		KeyCloakUserServiceHost:    fetchWithDefault("KEYCLOAK_USER_SERVICE_HOST", "localhost"),
+		KeyCloakUserServicePort:    fetchWithDefault("KEYCLOAK_USER_SERVICE_PORT", "8000"),
+		KeyCloakUserServiceScheme:  fetchWithDefault("KEYCLOAK_USER_SERVICE_SCHEME", "http"),
+		KeyCloakUserServiceTimeout: userServiceTimeout,
+		KeyCloakTimeout:            keyCloakTimeout,
+		KeyCloakTokenURL:           fetchWithDefault("KEYCLOAK_TOKEN_URL", "http://localhost:8080/"),
+		KeyCloakTokenPath:          fetchWithDefault("KEYCLOAK_TOKEN_PATH", "realms/master/protocol/openid-connect/token"),
+		KeyCloakTokenUsername:      fetchWithDefault("KEYCLOAK_TOKEN_USERNAME", "admin"),
+		KeyCloakTokenPassword:      fetchWithDefault("KEYCLOAK_TOKEN_PASSWORD", "admin"),
+		KeyCloakTokenGrantType:     fetchWithDefault("KEYCLOAK_TOKEN_GRANT_TYPE", "password"),
+		KeyCloakTokenClientID:      fetchWithDefault("KEYCLOAK_TOKEN_CLIENT_ID", "admin-cli"),
 
 		Port:    fetchWithDefault("PORT", "8090"),
 		TLSPort: fetchWithDefault("TLS_PORT", "8890"),

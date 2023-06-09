@@ -1,4 +1,4 @@
-package keycloak
+package keycloak_user_service
 
 import (
 	"fmt"
@@ -7,9 +7,8 @@ import (
 	"github.com/redhatinsights/mbop/internal/models"
 )
 
-type KeyCloak interface {
-	InitKeycloakConnection() error
-	GetAccessToken() (string, error)
+type KeyCloakUserService interface {
+	InitKeycloakUserServiceConnection() error
 	GetUsers(token string, users models.UserBody, q models.UserV1Query) (models.Users, error)
 	GetAccountV3Users(orgID string, token string, q models.UserV3Query) (models.Users, error)
 }
@@ -17,12 +16,12 @@ type KeyCloak interface {
 // re-declaring keycloak constant here to avoid circular module importing
 const keyCloakModule = "keycloak"
 
-func NewKeyCloakClient() (KeyCloak, error) {
-	var client KeyCloak
+func NewKeyCloakUserServiceClient() (KeyCloakUserService, error) {
+	var client KeyCloakUserService
 
 	switch config.Get().UsersModule {
 	case keyCloakModule:
-		client = &Client{}
+		client = &UserServiceClient{}
 	default:
 		return nil, fmt.Errorf("unsupported users module %q", config.Get().UsersModule)
 	}
