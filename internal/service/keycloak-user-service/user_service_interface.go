@@ -1,4 +1,4 @@
-package keycloakUserService
+package keycloakuserservice
 
 import (
 	"fmt"

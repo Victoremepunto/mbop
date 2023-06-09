@@ -1,4 +1,4 @@
-package keycloakUserService
+package keycloakuserservice
 
 import (
 	"encoding/json"
@@ -166,7 +166,7 @@ func keycloakResponseToUsers(r []models.KeycloakResponse) models.Users {
 			FirstName:     response.FirstName,
 			LastName:      response.LastName,
 			AddressString: "",
-			IsActive:      true,
+			IsActive:      response.IsActive,
 			IsInternal:    response.IsInternal,
 			Locale:        "en_US",
 			OrgID:         response.OrgID,

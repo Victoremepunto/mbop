@@ -5,7 +5,7 @@ import (
 
 	"github.com/redhatinsights/mbop/internal/config"
 	"github.com/redhatinsights/mbop/internal/service/keycloak"
-	keycloak_user_service "github.com/redhatinsights/mbop/internal/service/keycloak-user-service"
+	keycloakuserservice "github.com/redhatinsights/mbop/internal/service/keycloak-user-service"
 	"github.com/redhatinsights/mbop/internal/service/ocm"
 )
 
@@ -95,7 +95,7 @@ func AccountsV3UsersHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		userServiceClient, err := keycloak_user_service.NewKeyCloakUserServiceClient()
+		userServiceClient, err := keycloakuserservice.NewKeyCloakUserServiceClient()
 		if err != nil {
 			do500(w, "Can't build keycloak user service client: "+err.Error())
 			return
