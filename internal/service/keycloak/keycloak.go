@@ -57,7 +57,7 @@ func (keycloak *Client) GetAccessToken() (string, error) {
 func createEncodedTokenBody() *strings.Reader {
 	data := url.Values{}
 	data.Set("username", config.Get().KeyCloakTokenUsername)
-	data.Set("password", config.Get().KeyCloakTokenPassword)
+	data.Set("client_secret", config.Get().KeyCloakTokenPassword)
 	data.Set("grant_type", config.Get().KeyCloakTokenGrantType)
 	data.Set("client_id", config.Get().KeyCloakTokenClientID)
 
