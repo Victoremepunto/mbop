@@ -8,6 +8,8 @@ import (
 	"github.com/redhatinsights/mbop/internal/config"
 	l "github.com/redhatinsights/mbop/internal/logger"
 	"github.com/redhatinsights/mbop/internal/models"
+	"github.com/redhatinsights/mbop/internal/service/keycloak"
+	keycloakuserservice "github.com/redhatinsights/mbop/internal/service/keycloak-user-service"
 	"github.com/redhatinsights/mbop/internal/service/ocm"
 	"golang.org/x/exp/maps"
 )
@@ -58,6 +60,36 @@ func LookupEmailsForUsernames(ctx context.Context, email *models.Email) error {
 		}
 
 		for _, user := range users.Users {
+			toLookup[user.Username] = user.Email
+		}
+	case "keycloak":
+		keycloakClient := keycloak.NewKeyCloakClient()
+		err := keycloakClient.InitKeycloakConnection()
+		if err != nil {
+			return err
+		}
+
+		token, err := keycloakClient.GetAccessToken()
+		if err != nil {
+			return err
+		}
+
+		userServiceClient, err := keycloakuserservice.NewKeyCloakUserServiceClient()
+		if err != nil {
+			return err
+		}
+
+		err = userServiceClient.InitKeycloakUserServiceConnection()
+		if err != nil {
+			return err
+		}
+
+		u, err := userServiceClient.GetUsers(token, models.UserBody{Users: maps.Keys(toLookup)}, models.UserV1Query{})
+		if err != nil {
+			return err
+		}
+
+		for _, user := range u.Users {
 			toLookup[user.Username] = user.Email
 		}
 	case "mock":
