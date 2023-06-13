@@ -172,7 +172,6 @@ func keycloakResponseToUsers(r []models.KeycloakResponse) models.Users {
 			OrgID:         response.OrgID,
 			DisplayName:   response.UserID,
 			Type:          response.Type,
-			IsOrgAdmin:    response.OrgAdmin,
 		})
 	}
 
