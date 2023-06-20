@@ -46,7 +46,7 @@ type KeycloakResponse struct {
 	IsInternal bool                `json:"is_internal"`
 	IsActive   bool                `json:"is_active"`
 	Modified   string              `json:"modified"`
-	OrgAdmin   bool                `json:"org_admin"`
+	IsOrgAdmin bool                `json:"is_org_admin"`
 	OrgID      string              `json:"org_id"`
 	Type       string              `json:"type"`
 	Username   string              `json:"username"`
