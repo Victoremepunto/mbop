@@ -145,6 +145,18 @@ objects:
             value: ${KEYCLOAK_TIMEOUT}
           - name: KEYCLOAK_SCHEME
             value: ${KEYCLOAK_SCHEME}
+          - name: KEYCLOAK_USER_SERVICE_HOST
+            value: ${KEYCLOAK_USER_SERVICE_HOST}
+          - name: KEYCLOAK_USER_SERVICE_PORT
+            value: ${KEYCLOAK_USER_SERVICE_PORT}
+          - name: KEYCLOAK_USER_SERVICE_SCHEME
+            value: ${KEYCLOAK_USER_SERVICE_SCHEME}
+          - name: KEYCLOAK_USER_SERVICE_TIMEOUT
+            value: ${KEYCLOAK_USER_SERVICE_TIMEOUT}
+          - name: KEYCLOAK_TOKEN_URL
+            value: ${KEYCLOAK_TOKEN_URL}
+          - name: KEYCLOAK_TOKEN_PATH
+            value: ${KEYCLOAK_TOKEN_PATH}
           - name: KEYCLOAK_TOKEN_GRANT_TYPE
             value: ${KEYCLOAK_TOKEN_GRANT_TYPE}
           - name: KEYCLOAK_TOKEN_USERNAME
@@ -238,6 +250,24 @@ parameters:
 - name: KEYCLOAK_TIMEOUT
   description: keycloak client's timeout value
   value: "10"
+- name: KEYCLOAK_USER_SERVICE_HOST
+  description: keycloak userservice's host
+  value: "localhost"
+- name: KEYCLOAK_USER_SERVICE_PORT
+  description: keycloak userservice's post
+  value: "8000"
+- name: KEYCLOAK_USER_SERVICE_SCHEME
+  description: keycloak userservice's scheme
+  value: "http"
+- name: KEYCLOAK_USER_SERVICE_TIMEOUT
+  description: keycloak userservice's timeout
+  value: "60"
+- name: KEYCLOAK_TOKEN_URL
+  description: host for keycloak token request
+  value: "http://localhost:8080/"
+- name: KEYCLOAK_TOKEN_PATH
+  description: path for keycloak token request
+  value: "realms/master/protocol/openid-connect/token"
 - name: KEYCLOAK_TOKEN_GRANT_TYPE
   description: grant type value for keycloak token request
   value: password

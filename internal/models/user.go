@@ -44,14 +44,15 @@ type KeycloakResponse struct {
 	Created    string              `json:"created"`
 	Email      string              `json:"email"`
 	IsInternal bool                `json:"is_internal"`
+	IsActive   bool                `json:"is_active"`
 	Modified   string              `json:"modified"`
-	OrgAdmin   bool                `json:"org_admin"`
+	IsOrgAdmin bool                `json:"is_org_admin"`
 	OrgID      string              `json:"org_id"`
 	Type       string              `json:"type"`
 	Username   string              `json:"username"`
 	UserID     string              `json:"user_id"`
-	FirstName  string              `json:"firstName"`
-	LastName   string              `json:"lastName"`
+	FirstName  string              `json:"first_name"`
+	LastName   string              `json:"last_name"`
 	ID         string              `json:"id"`
 }
 

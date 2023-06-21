@@ -6,6 +6,7 @@ import (
 	"github.com/redhatinsights/mbop/internal/config"
 	"github.com/redhatinsights/mbop/internal/models"
 	"github.com/redhatinsights/mbop/internal/service/keycloak"
+	keycloakuserservice "github.com/redhatinsights/mbop/internal/service/keycloak-user-service"
 	"github.com/redhatinsights/mbop/internal/service/ocm"
 )
 
@@ -104,25 +105,32 @@ func AccountsV3UsersByHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		client, err := keycloak.NewKeyCloakClient()
-		if err != nil {
-			do400(w, err.Error())
-			return
-		}
-
-		err = client.InitKeycloakConnection()
+		keycloakClient := keycloak.NewKeyCloakClient()
+		err = keycloakClient.InitKeycloakConnection()
 		if err != nil {
 			do500(w, "Can't build keycloak connection: "+err.Error())
 			return
 		}
 
-		token, err := client.GetAccessToken()
+		token, err := keycloakClient.GetAccessToken()
 		if err != nil {
 			do500(w, "Can't fetch keycloak token: "+err.Error())
 			return
 		}
 
-		u, err := client.GetAccountV3Users(orgID, token, q)
+		userServiceClient, err := keycloakuserservice.NewKeyCloakUserServiceClient()
+		if err != nil {
+			do500(w, "Can't build keycloak user service client: "+err.Error())
+			return
+		}
+
+		err = userServiceClient.InitKeycloakUserServiceConnection()
+		if err != nil {
+			do500(w, "Can't build keycloak user service connection: "+err.Error())
+			return
+		}
+
+		u, err := userServiceClient.GetAccountV3Users(orgID, token, q)
 		if err != nil {
 			do500(w, "Cant Retrieve Keycloak Accounts: "+err.Error())
 			return
