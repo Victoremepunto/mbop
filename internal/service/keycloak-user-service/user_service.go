@@ -128,8 +128,12 @@ func createV3UsersRequestURL(orgID string, q models.UserV3Query) (*url.URL, erro
 	}
 	queryParams := url.Query()
 
+	// default ordering
+	queryParams.Add("order", "username")
+	queryParams.Add("direction", "asc")
+
 	if q.SortOrder != "" {
-		queryParams.Add("direction", q.SortOrder)
+		queryParams.Set("direction", q.SortOrder)
 	}
 
 	queryParams.Add("org_id", orgID)
