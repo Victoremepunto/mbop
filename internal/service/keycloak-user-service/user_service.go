@@ -174,9 +174,12 @@ func createV3UsersByRequestURL(orgID string, q models.UserV3Query, usersByBody m
 	}
 	queryParams := url.Query()
 
-	if usersByBody.EmailStartsWith != "" || usersByBody.PrimaryEmail != "" {
-		emailList := []string{usersByBody.EmailStartsWith, usersByBody.PrimaryEmail}
-		queryParams.Add("emails", fmt.Sprint(emailList))
+	if usersByBody.EmailStartsWith != "" {
+		queryParams.Add("emails", usersByBody.EmailStartsWith)
+	}
+
+	if usersByBody.PrimaryEmail != "" {
+		queryParams.Add("emails", usersByBody.PrimaryEmail)
 	}
 
 	if usersByBody.PrincipalStartsWith != "" {
