@@ -11,6 +11,7 @@ type KeyCloakUserService interface {
 	InitKeycloakUserServiceConnection() error
 	GetUsers(token string, users models.UserBody, q models.UserV1Query) (models.Users, error)
 	GetAccountV3Users(orgID string, token string, q models.UserV3Query) (models.Users, error)
+	GetAccountV3UsersBy(orgID string, token string, q models.UserV3Query, usersByBody models.UsersByBody) (models.Users, error)
 }
 
 // re-declaring keycloak constant here to avoid circular module importing

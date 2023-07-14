@@ -9,7 +9,7 @@ type UserV3Responses struct {
 }
 
 type KeycloakResponses struct {
-	Meta  KeycloakMetadata   `json:"meta"`
+	Meta  KeycloakMetadata   `json:"meta,omitempty"`
 	Users []KeycloakResponse `json:"users,omitempty"`
 }
 

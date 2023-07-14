@@ -130,7 +130,7 @@ func AccountsV3UsersByHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		u, err := userServiceClient.GetAccountV3Users(orgID, token, q)
+		u, err := userServiceClient.GetAccountV3UsersBy(orgID, token, q, usersByBody)
 		if err != nil {
 			do500(w, "Cant Retrieve Keycloak Accounts: "+err.Error())
 			return

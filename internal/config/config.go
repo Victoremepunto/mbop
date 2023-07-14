@@ -102,7 +102,7 @@ func Get() *MbopConfig {
 		Debug:                  debug,
 
 		KeyCloakUserServiceHost:    fetchWithDefault("KEYCLOAK_USER_SERVICE_HOST", "localhost"),
-		KeyCloakUserServicePort:    fetchWithDefault("KEYCLOAK_USER_SERVICE_PORT", ":8443"),
+		KeyCloakUserServicePort:    fetchWithDefault("KEYCLOAK_USER_SERVICE_PORT", ":8000"),
 		KeyCloakUserServiceScheme:  fetchWithDefault("KEYCLOAK_USER_SERVICE_SCHEME", "http"),
 		KeyCloakUserServiceTimeout: userServiceTimeout,
 		KeyCloakTimeout:            keyCloakTimeout,
