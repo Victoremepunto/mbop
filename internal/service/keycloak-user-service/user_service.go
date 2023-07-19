@@ -70,6 +70,28 @@ func (userService *UserServiceClient) GetAccountV3Users(orgID string, token stri
 	return keycloakResponseToUsers(unmarshaledResponse.Users), nil
 }
 
+func (userService *UserServiceClient) GetAccountV3UsersBy(orgID string, token string, q models.UserV3Query, usersByBody models.UsersByBody) (models.Users, error) {
+	users := models.Users{Users: []models.User{}}
+	url, err := createV3UsersByRequestURL(orgID, q, usersByBody)
+	if err != nil {
+		return users, err
+	}
+
+	body, err := userService.sendKeycloakGetRequest(url, token)
+	if err != nil {
+		l.Log.Error(err, "/v3/usersBy error sending request")
+		return users, err
+	}
+
+	unmarshaledResponse := models.KeycloakResponses{}
+	err = json.Unmarshal(body, &unmarshaledResponse)
+	if err != nil {
+		return users, err
+	}
+
+	return keycloakResponseToUsers(unmarshaledResponse.Users), nil
+}
+
 func (userService *UserServiceClient) sendKeycloakGetRequest(url *url.URL, token string) ([]byte, error) {
 	var responseBody []byte
 
@@ -127,6 +149,42 @@ func createV3UsersRequestURL(orgID string, q models.UserV3Query) (*url.URL, erro
 		return nil, fmt.Errorf("error creating (keycloak) /v3/users url: %s", err)
 	}
 	queryParams := url.Query()
+
+	// default ordering
+	queryParams.Add("order", "username")
+	queryParams.Add("direction", "asc")
+
+	if q.SortOrder != "" {
+		queryParams.Set("direction", q.SortOrder)
+	}
+
+	queryParams.Add("org_id", orgID)
+	queryParams.Add("limit", strconv.Itoa(q.Limit))
+	queryParams.Add("offset", strconv.Itoa(q.Offset))
+
+	url.RawQuery = queryParams.Encode()
+
+	return url, err
+}
+
+func createV3UsersByRequestURL(orgID string, q models.UserV3Query, usersByBody models.UsersByBody) (*url.URL, error) {
+	url, err := url.Parse(fmt.Sprintf("%s://%s%s/users", config.Get().KeyCloakUserServiceScheme, config.Get().KeyCloakUserServiceHost, config.Get().KeyCloakUserServicePort))
+	if err != nil {
+		return nil, fmt.Errorf("error creating (keycloak) /v3/usersBy url: %s", err)
+	}
+	queryParams := url.Query()
+
+	if usersByBody.EmailStartsWith != "" {
+		queryParams.Add("emails", usersByBody.EmailStartsWith)
+	}
+
+	if usersByBody.PrimaryEmail != "" {
+		queryParams.Add("emails", usersByBody.PrimaryEmail)
+	}
+
+	if usersByBody.PrincipalStartsWith != "" {
+		queryParams.Add("usernames", usersByBody.PrincipalStartsWith)
+	}
 
 	// default ordering
 	queryParams.Add("order", "username")
