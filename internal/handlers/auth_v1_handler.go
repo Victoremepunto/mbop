@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/redhatinsights/mbop/internal/config"
 	"github.com/redhatinsights/mbop/internal/store"
 )
 
@@ -31,33 +32,39 @@ type User struct {
 }
 
 func AuthV1Handler(w http.ResponseWriter, r *http.Request) {
-	gatewayCN, err := getCertCN(r.Header.Get(CertHeader))
-	if err != nil {
-		do400(w, err.Error())
-		return
-	}
-
-	db := store.GetStore()
-
-	reg, err := db.FindByUID(gatewayCN)
-	if err != nil {
-		if errors.Is(err, store.ErrRegistrationNotFound) {
-			doError(w, err.Error(), 401)
-		} else {
-			do500(w, "failed to search for registration: "+err.Error())
+	switch config.Get().UsersModule {
+	case awsModule, mockModule, keycloakModule:
+		gatewayCN, err := getCertCN(r.Header.Get(CertHeader))
+		if err != nil {
+			do400(w, err.Error())
+			return
 		}
-		return
-	}
 
-	sendJSON(w, AuthV1Response{
-		Mechanism: "cert",
-		User: User{
-			OrgID:       reg.OrgID,
-			DisplayName: reg.OrgID,
-			ID:          -1,
-			IsActive:    true,
-			IsOrgAdmin:  true,
-			Type:        "system",
-		},
-	})
+		db := store.GetStore()
+
+		reg, err := db.FindByUID(gatewayCN)
+		if err != nil {
+			if errors.Is(err, store.ErrRegistrationNotFound) {
+				doError(w, err.Error(), 401)
+			} else {
+				do500(w, "failed to search for registration: "+err.Error())
+			}
+			return
+		}
+
+		sendJSON(w, AuthV1Response{
+			Mechanism: "cert",
+			User: User{
+				OrgID:       reg.OrgID,
+				DisplayName: reg.OrgID,
+				ID:          -1,
+				IsActive:    true,
+				IsOrgAdmin:  true,
+				Type:        "system",
+			},
+		})
+
+	default:
+		CatchAll(w, r)
+	}
 }
