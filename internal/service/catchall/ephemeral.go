@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/redhatinsights/mbop/internal/models"
+	"github.com/redhatinsights/mbop/internal/store"
 	"golang.org/x/oauth2/clientcredentials"
 )
 
@@ -500,6 +501,30 @@ func (m *MBOPServer) entitlements(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(userObj.Entitlements))
 }
 
+func (m *MBOPServer) checkRegistration(w http.ResponseWriter, r *http.Request) {
+	cnValue := r.Header.Get("x-rh-check-reg")
+	fmt.Printf("%s", cnValue)
+	if cnValue == "" {
+		http.Error(w, "could not get CN from header", http.StatusForbidden)
+		return
+	}
+
+	db := store.GetStore()
+
+	reg, err := db.FindByUID(cnValue)
+	if err != nil {
+		http.Error(w, "cn not registered in db", http.StatusForbidden)
+	} else {
+		str, err := json.Marshal(reg)
+		if err != nil {
+			http.Error(w, "could not create response for reg", http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Fprint(w, string(str))
+	}
+}
+
 func (m *MBOPServer) MainHandler(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.URL.Path == "/v1/users":
@@ -516,6 +541,8 @@ func (m *MBOPServer) MainHandler(w http.ResponseWriter, r *http.Request) {
 		m.usersV2V3Handler(w, r)
 	case r.URL.Path == "/api/entitlements/v1/services":
 		m.entitlements(w, r)
+	case r.URL.Path == "/v1/check_registration":
+		m.checkRegistration(w, r)
 	}
 }
 
