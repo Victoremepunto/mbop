@@ -501,8 +501,9 @@ func (m *MBOPServer) entitlements(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(userObj.Entitlements))
 }
 
-func (m *MBOPServer) check_registration(w http.ResponseWriter, r *http.Request) {
+func (m *MBOPServer) checkRegistration(w http.ResponseWriter, r *http.Request) {
 	cnValue := r.Header.Get("x-rh-check-reg")
+	fmt.Printf("%s", cnValue)
 	if cnValue == "" {
 		http.Error(w, "could not get CN from header", http.StatusForbidden)
 		return
@@ -510,11 +511,17 @@ func (m *MBOPServer) check_registration(w http.ResponseWriter, r *http.Request) 
 
 	db := store.GetStore()
 
-	_, err := db.FindByUID(cnValue)
+	reg, err := db.FindByUID(cnValue)
 	if err != nil {
 		http.Error(w, "cn not registered in db", http.StatusForbidden)
 	} else {
-		return
+		str, err := json.Marshal(reg)
+		if err != nil {
+			http.Error(w, "could not create response for reg", http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Fprint(w, string(str))
 	}
 }
 
@@ -535,7 +542,7 @@ func (m *MBOPServer) MainHandler(w http.ResponseWriter, r *http.Request) {
 	case r.URL.Path == "/api/entitlements/v1/services":
 		m.entitlements(w, r)
 	case r.URL.Path == "/v1/check_registration":
-		m.check_registration(w, r)
+		m.checkRegistration(w, r)
 	}
 }
 

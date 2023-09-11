@@ -91,9 +91,9 @@ func TestExampleTestSuite(t *testing.T) {
 }
 
 func (suite *RegistrationTestSuite) TestGoodRegistration() {
-	store.SetupStore()
+	suite.Nil(store.SetupStore())
 	db := store.GetStore()
-	db.Create(&store.Registration{
+	_, err := db.Create(&store.Registration{
 		ID:          "nark",
 		OrgID:       "12345",
 		Username:    "nark",
@@ -103,23 +103,40 @@ func (suite *RegistrationTestSuite) TestGoodRegistration() {
 		CreatedAt:   time.Time{},
 	})
 
+	suite.Nil(err)
+
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(MakeNewMBOPServer().MainHandler))
 
 	sut := httptest.NewServer(mux)
 	defer sut.Close()
 
-	req2, _ := http.NewRequest("GET", fmt.Sprintf("%s/v1/check_registration", sut.URL), nil)
+	req2, err := http.NewRequest("GET", fmt.Sprintf("%s/v1/check_registration", sut.URL), nil)
+	suite.Nil(err)
+
 	req2.Header.Set("x-rh-check-reg", "nark")
 	resp, err := http.DefaultClient.Do(req2)
+	suite.NoError(err)
+
+	dta, err := io.ReadAll(resp.Body)
+
+	suite.NoError(err)
+
+	resp.Body.Close()
 	suite.Nil(err)
+
+	obj := &store.Registration{}
+	err = json.Unmarshal(dta, obj)
+	suite.NoError(err)
+
+	suite.Equal("12345", obj.OrgID)
 
 	suite.Equal(http.StatusOK, resp.StatusCode)
 }
 
 func (suite *RegistrationTestSuite) TestBadRegistration() {
 
-	store.SetupStore()
+	suite.Nil(store.SetupStore())
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(MakeNewMBOPServer().MainHandler))
@@ -127,9 +144,12 @@ func (suite *RegistrationTestSuite) TestBadRegistration() {
 	sut := httptest.NewServer(mux)
 	defer sut.Close()
 
-	req2, _ := http.NewRequest("GET", fmt.Sprintf("%s/v1/check_registration", sut.URL), nil)
+	req2, err := http.NewRequest("GET", fmt.Sprintf("%s/v1/check_registration", sut.URL), nil)
+	suite.Nil(err)
+
 	req2.Header.Set("x-rh-check-reg", "nark")
 	resp, err := http.DefaultClient.Do(req2)
+	resp.Body.Close()
 	suite.Nil(err)
 
 	suite.Equal(http.StatusForbidden, resp.StatusCode)
