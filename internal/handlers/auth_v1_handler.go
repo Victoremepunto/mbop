@@ -33,7 +33,7 @@ type User struct {
 
 func AuthV1Handler(w http.ResponseWriter, r *http.Request) {
 	switch config.Get().UsersModule {
-	case awsModule, mockModule, keycloakModule:
+	case amsModule, mockModule, keycloakModule:
 		gatewayCN, err := getCertCN(r.Header.Get(CertHeader))
 		if err != nil {
 			do400(w, err.Error())
