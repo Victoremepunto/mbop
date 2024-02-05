@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"runtime"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	l "github.com/redhatinsights/mbop/internal/logger"
 	"github.com/redhatinsights/mbop/internal/store"
 	"github.com/redhatinsights/platform-go-middlewares/identity"
 )
@@ -85,7 +85,6 @@ func AllowlistListHandler(w http.ResponseWriter, r *http.Request) {
 
 	db := store.GetStore()
 
-	runtime.Breakpoint()
 	addrs, err := db.AllowedAddresses(id.Identity.OrgID)
 	if err != nil {
 		do500(w, "error listing addresses: %w"+err.Error())
@@ -101,5 +100,8 @@ func AllowlistListHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	json.NewEncoder(w).Encode(out)
+	err = json.NewEncoder(w).Encode(out)
+	if err != nil {
+		l.Log.Info("failed to encode response", "error", err)
+	}
 }

@@ -76,7 +76,7 @@ func (m *inMemoryStore) Delete(orgID string, uid string) error {
 	return ErrRegistrationNotFound
 }
 
-func (m *inMemoryStore) AllowedAddresses(orgID string) ([]Address, error) {
+func (m *inMemoryStore) AllowedAddresses(_ string) ([]Address, error) {
 	return m.allowedAddresses, nil
 }
 func (m *inMemoryStore) AllowedIP(ip *Address) (bool, error) {

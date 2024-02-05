@@ -131,6 +131,8 @@ objects:
             value: ${TOKEN_TTL_DURATION}
           - name: STORE_BACKEND
             value: ${STORE_BACKEND}
+          - name: ALLOWLIST_ENABLED
+            value: ${ALLOWLIST_ENABLED}
           - name: DISABLE_CATCHALL
             value: ${DISABLE_CATCHALL}
           - name: IS_INTERNAL_LABEL
@@ -325,3 +327,6 @@ parameters:
 - name: CERT_DIR
   description: the base directory where ssl certs are stored
   value: "/certs"
+- name: ALLOWLIST_ENABLED
+  description: whether to check registrations against the internal allowlist
+  value: "false"

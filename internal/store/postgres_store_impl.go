@@ -3,7 +3,6 @@ package store
 import (
 	"database/sql"
 	"encoding/json"
-	"runtime"
 	"time"
 
 	// the pgx driver for the database
@@ -210,16 +209,15 @@ func (p *postgresStore) DenyAddress(ip *Address) error {
 	return nil
 }
 
-func (p *postgresStore) AllowedAddresses(orgId string) ([]Address, error) {
+func (p *postgresStore) AllowedAddresses(orgID string) ([]Address, error) {
 	rows, err := p.db.Query(`select
 		org_id, ip, created_at
 		from allowlist
-		where org_id = $1`, orgId)
+		where org_id = $1`, orgID)
 	if err != nil {
 		return nil, err
 	}
 
-	runtime.Breakpoint()
 	addresses := make([]Address, 0)
 	for rows.Next() {
 		var (
