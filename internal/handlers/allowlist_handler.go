@@ -3,8 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
 	"runtime"
 	"time"
@@ -34,8 +32,7 @@ func AllowlistCreateHandler(w http.ResponseWriter, r *http.Request) {
 	var createReq allowlistCreateRequest
 	err := json.NewDecoder(r.Body).Decode(&createReq)
 	if err != nil {
-		w.WriteHeader(400)
-		io.WriteString(w, "invalid json in body - only expected key is [ip]")
+		do400(w, "invalid json in body - only expected key is [ip]")
 		return
 	}
 
@@ -43,9 +40,7 @@ func AllowlistCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = db.AllowAddress(&store.Address{IP: createReq.IP, OrgID: id.Identity.OrgID})
 	if err != nil {
-		w.WriteHeader(500)
-		err = fmt.Errorf("error storing address: %w", err)
-		io.WriteString(w, err.Error())
+		do500(w, "error storing address: "+err.Error())
 		return
 	}
 
@@ -61,8 +56,7 @@ func AllowlistDeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 	ip := chi.URLParam(r, "address")
 	if ip == "" {
-		w.WriteHeader(400)
-		io.WriteString(w, "need address in path in the form `/v1/allowlist/{address}")
+		do400(w, "need address in path in the form `/v1/allowlist/{address}")
 		return
 	}
 
@@ -71,14 +65,11 @@ func AllowlistDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	err := db.DenyAddress(&store.Address{IP: ip})
 	if err != nil {
 		if errors.Is(err, store.ErrAddressNotAllowListed) {
-			w.WriteHeader(404)
-			io.WriteString(w, "ip not allowlisted")
+			doError(w, "ip not allowlisted", 404)
 			return
 		}
 
-		w.WriteHeader(500)
-		err = fmt.Errorf("error deleting addressaddress: %w", err)
-		io.WriteString(w, err.Error())
+		do500(w, "error deleting addressaddress: %w"+err.Error())
 		return
 	}
 
@@ -97,9 +88,7 @@ func AllowlistListHandler(w http.ResponseWriter, r *http.Request) {
 	runtime.Breakpoint()
 	addrs, err := db.AllowedAddresses(id.Identity.OrgID)
 	if err != nil {
-		w.WriteHeader(500)
-		err = fmt.Errorf("error listing addresses: %w", err)
-		io.WriteString(w, err.Error())
+		do500(w, "error listing addresses: %w"+err.Error())
 		return
 	}
 
