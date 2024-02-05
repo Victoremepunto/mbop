@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"encoding/json"
+	"runtime"
 	"time"
 
 	// the pgx driver for the database
@@ -66,9 +67,9 @@ func (p *postgresStore) FindByUID(uid string) (*Registration, error) {
 
 func (p *postgresStore) Create(r *Registration) (string, error) {
 	res := p.db.QueryRow(
-		`insert into registrations 
-		(org_id, username, uid, display_name, extra) 
-		values ($1, $2, $3, $4, $5) 
+		`insert into registrations
+		(org_id, username, uid, display_name, extra)
+		values ($1, $2, $3, $4, $5)
 		returning id`,
 		r.OrgID,
 		r.Username,
@@ -170,4 +171,73 @@ func scanRegistration(row scanner) (*Registration, error) {
 		Extra:       e,
 		CreatedAt:   createdAt,
 	}, nil
+}
+
+func (p *postgresStore) AllowedIP(ip *Address) (bool, error) {
+	res := p.db.QueryRow(`select 1
+	from allowlist
+	where ip = $1 and org_id = $2 limit 1`,
+		ip.IP, ip.OrgID)
+
+	var found int
+	err := res.Scan(&found)
+	if err != nil {
+		return false, nil
+	}
+
+	return found == 1, nil
+}
+
+func (p *postgresStore) AllowAddress(ip *Address) error {
+	_, err := p.db.Exec(`insert into allowlist (ip, org_id) values ($1, $2)`, ip.IP, ip.OrgID)
+	return err
+}
+
+func (p *postgresStore) DenyAddress(ip *Address) error {
+	res, err := p.db.Exec(`delete from allowlist where ip=$1`, ip.IP)
+	if err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return ErrAddressNotAllowListed
+	}
+
+	return nil
+}
+
+func (p *postgresStore) AllowedAddresses(orgId string) ([]Address, error) {
+	rows, err := p.db.Query(`select
+		org_id, ip, created_at
+		from allowlist
+		where org_id = $1`, orgId)
+	if err != nil {
+		return nil, err
+	}
+
+	runtime.Breakpoint()
+	addresses := make([]Address, 0)
+	for rows.Next() {
+		var (
+			orgID     string
+			address   string
+			createdAt time.Time
+		)
+
+		err = rows.Scan(&orgID, &address, &createdAt)
+		if err != nil {
+			return nil, err
+		}
+
+		addresses = append(addresses, Address{
+			IP:        address,
+			OrgID:     orgID,
+			CreatedAt: createdAt,
+		})
+	}
+	return addresses, nil
 }

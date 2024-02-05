@@ -1,6 +1,11 @@
 package store
 
 type Store interface {
+	RegistrationStore
+	AllowlistStore
+}
+
+type RegistrationStore interface {
 	All(orgID string, limit, offset int) ([]Registration, int, error)
 	// Find a registration that both the org ID + UID match
 	Find(orgID, uid string) (*Registration, error)
@@ -9,4 +14,11 @@ type Store interface {
 	Create(r *Registration) (string, error)
 	Update(r *Registration, update *RegistrationUpdate) error
 	Delete(orgID, uid string) error
+}
+
+type AllowlistStore interface {
+	AllowedAddresses(orgId string) ([]Address, error)
+	AllowedIP(ip *Address) (bool, error)
+	AllowAddress(ip *Address) error
+	DenyAddress(ip *Address) error
 }

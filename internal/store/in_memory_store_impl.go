@@ -1,9 +1,12 @@
 package store
 
-import "time"
+import (
+	"time"
+)
 
 type inMemoryStore struct {
-	db []Registration
+	db               []Registration
+	allowedAddresses []Address
 }
 
 func (m *inMemoryStore) All(orgID string, _, _ int) ([]Registration, int, error) {
@@ -71,4 +74,30 @@ func (m *inMemoryStore) Delete(orgID string, uid string) error {
 	}
 
 	return ErrRegistrationNotFound
+}
+
+func (m *inMemoryStore) AllowedAddresses(orgID string) ([]Address, error) {
+	return m.allowedAddresses, nil
+}
+func (m *inMemoryStore) AllowedIP(ip *Address) (bool, error) {
+	for _, addr := range m.allowedAddresses {
+		if ip.IP == addr.IP {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+func (m *inMemoryStore) AllowAddress(ip *Address) error {
+	m.allowedAddresses = append(m.allowedAddresses, *ip)
+	return nil
+}
+func (m *inMemoryStore) DenyAddress(ip *Address) error {
+	for i := range m.allowedAddresses {
+		if m.allowedAddresses[i].OrgID == ip.OrgID && m.allowedAddresses[i].IP == ip.IP {
+			m.allowedAddresses = append(m.allowedAddresses[:i], m.allowedAddresses[i+1:]...)
+			return nil
+		}
+	}
+
+	return ErrAddressNotAllowListed
 }

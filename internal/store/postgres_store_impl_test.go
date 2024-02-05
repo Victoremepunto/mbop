@@ -13,7 +13,7 @@ import (
 type TestSuite struct {
 	suite.Suite
 	db    *sql.DB
-	store Store
+	store RegistrationStore
 }
 
 func (suite *TestSuite) SetupSuite() {

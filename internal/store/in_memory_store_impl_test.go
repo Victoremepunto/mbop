@@ -8,7 +8,7 @@ import (
 
 type InMemoryStoreTestSuite struct {
 	suite.Suite
-	store Store
+	store RegistrationStore
 }
 
 func (suite *InMemoryStoreTestSuite) SetupSuite() {}

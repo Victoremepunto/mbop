@@ -52,6 +52,10 @@ func main() {
 		r.Post("/v1/registrations", handlers.RegistrationCreateHandler)
 		r.Delete("/v1/registrations/{uid}", handlers.RegistrationDeleteHandler)
 		r.Get("/v1/registrations/token", handlers.TokenHandler)
+
+		r.Get("/v1/allowlist", handlers.AllowlistListHandler)
+		r.Post("/v1/allowlist", handlers.AllowlistCreateHandler)
+		r.Delete("/v1/allowlist/{address}", handlers.AllowlistDeleteHandler)
 	})
 
 	err := mailer.InitConfig()

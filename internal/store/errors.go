@@ -5,7 +5,10 @@ import (
 	"reflect"
 )
 
-var ErrRegistrationNotFound = errors.New("registration not found")
+var (
+	ErrRegistrationNotFound  = errors.New("registration not found")
+	ErrAddressNotAllowListed = errors.New("ip not registered in allowlist")
+)
 
 // error type containing information on why a registration already exists
 type ErrRegistrationAlreadyExists struct {
