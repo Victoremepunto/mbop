@@ -285,10 +285,10 @@ func (suite *TestSuite) TestIPAllowedHappyMultiple() {
 	}))
 	suite.Nil(suite.store.AllowAddress(&AllowlistBlock{
 		IPBlock: "192.168.1.1/24",
-		OrgID:   "gateway",
+		OrgID:   "1234",
 	}))
 
-	for _, ip := range []string{"10.0.0.100", "192.168.1.100"} {
+	for _, ip := range []string{"10.0.0.100", "192.168.1.100", "10.0.0.20/32", "192.168.1.20/32"} {
 		allowed, err := suite.store.AllowedIP(ip, "1234")
 		suite.True(allowed)
 		suite.Nil(err)

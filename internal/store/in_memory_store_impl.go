@@ -80,7 +80,7 @@ func (m *inMemoryStore) Delete(orgID string, uid string) error {
 func (m *inMemoryStore) AllowedAddresses(_ string) ([]AllowlistBlock, error) {
 	return m.allowedAddresses, nil
 }
-func (m *inMemoryStore) AllowedIP(ip, orgID string) (bool, error) {
+func (m *inMemoryStore) AllowedIP(ip, _ string) (bool, error) {
 	for _, addr := range m.allowedAddresses {
 		_, ipnet, _ := net.ParseCIDR(addr.IPBlock)
 		if ipnet.Contains(net.ParseIP(ip)) {

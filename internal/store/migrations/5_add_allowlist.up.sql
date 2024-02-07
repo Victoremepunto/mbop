@@ -5,5 +5,5 @@ create table if not exists public.allowlist(
 );
 
 alter table if exists public.allowlist
-    add constraint allowlist_unique_cidr
-        primary key (ip_block);
+    add constraint allowlist_unique_cidr_per_org
+        primary key (ip_block, org_id);

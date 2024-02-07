@@ -38,7 +38,7 @@ func AllowlistCreateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !strings.Contains(createReq.IPBlock, "/") {
-		createReq.IPBlock = createReq.IPBlock + "/32"
+		createReq.IPBlock += "/32"
 	}
 
 	_, _, err = net.ParseCIDR(createReq.IPBlock)

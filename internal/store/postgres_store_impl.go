@@ -3,7 +3,6 @@ package store
 import (
 	"database/sql"
 	"encoding/json"
-	"net"
 	"time"
 
 	// the pgx driver for the database
@@ -174,32 +173,20 @@ func scanRegistration(row scanner) (*Registration, error) {
 }
 
 func (p *postgresStore) AllowedIP(ip string, orgID string) (bool, error) {
-	rows, err := p.db.Query(`select ip_block from allowlist where org_id = $1 or org_id = 'gateway'`, orgID)
-	if err != nil {
+	// turns out postgres can do this on the backend! see old code that accomplishes the same thing at commit dca8f2c
+
+	// basically its doing a subquery selecting all blocks from the org or
+	// gateway and then shoving them into an array and checking if the ip exists
+	// in those blocks.
+	row := p.db.QueryRow(`select $1::inet << any(array(select ip_block from allowlist where org_id = $2)::inet[])`, ip, orgID)
+
+	var valid bool
+	err := row.Scan(&valid)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return false, err
 	}
 
-	var blocks []string
-	for rows.Next() {
-		var block string
-		err := rows.Scan(&block)
-		if err != nil {
-			return false, nil
-		}
-
-		blocks = append(blocks, block)
-	}
-
-	// Loop over blocks and see if they contain the IP
-	for _, block := range blocks {
-		// ignoring the error because we sanitize them on insert
-		_, ipnet, _ := net.ParseCIDR(block)
-		if ipnet.Contains(net.ParseIP(ip)) {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	return valid, nil
 }
 
 func (p *postgresStore) AllowAddress(ip *AllowlistBlock) error {
