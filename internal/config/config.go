@@ -41,6 +41,7 @@ type MbopConfig struct {
 	KeyCloakTokenClientID      string
 
 	AllowlistEnabled bool
+	AllowlistHeader  string
 	StoreBackend     string
 	DatabaseHost     string
 	DatabasePort     string
@@ -93,6 +94,7 @@ func Get() *MbopConfig {
 		DatabaseName:     fetchWithDefault("DATABASE_NAME", "mbop"),
 		StoreBackend:     fetchWithDefault("STORE_BACKEND", "memory"),
 		AllowlistEnabled: allowlistEnabled,
+		AllowlistHeader:  fetchWithDefault("ALLOWLIST_HEADER", "x-forwarded-for"),
 
 		CognitoAppClientID:     fetchWithDefault("COGNITO_APP_CLIENT_ID", ""),
 		CognitoAppClientSecret: fetchWithDefault("COGNITO_APP_CLIENT_SECRET", ""),

@@ -17,8 +17,8 @@ type RegistrationStore interface {
 }
 
 type AllowlistStore interface {
-	AllowedAddresses(orgID string) ([]Address, error)
-	AllowedIP(ip *Address) (bool, error)
-	AllowAddress(ip *Address) error
-	DenyAddress(ip *Address) error
+	AllowedAddresses(orgID string) ([]AllowlistBlock, error)
+	AllowedIP(ip, orgID string) (bool, error)
+	AllowAddress(ip *AllowlistBlock) error
+	DenyAddress(ip *AllowlistBlock) error
 }

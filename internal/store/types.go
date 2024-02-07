@@ -25,8 +25,8 @@ type RegistrationUpdate struct {
 	Extra *map[string]interface{}
 }
 
-type Address struct {
-	IP        string
+type AllowlistBlock struct {
+	IPBlock   string
 	OrgID     string
 	CreatedAt time.Time
 }

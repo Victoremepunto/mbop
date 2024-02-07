@@ -3,21 +3,22 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"net"
 	"net/http"
+	"strings"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	l "github.com/redhatinsights/mbop/internal/logger"
 	"github.com/redhatinsights/mbop/internal/store"
 	"github.com/redhatinsights/platform-go-middlewares/identity"
 )
 
 type allowlistCreateRequest struct {
-	IP string `json:"ip"`
+	IPBlock string `json:"ip_block"`
 }
 
 type allowListResponse struct {
-	IP        string    `json:"ip"`
+	IPBlock   string    `json:"ip_block"`
 	OrgID     string    `json:"org_id"`
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -36,9 +37,19 @@ func AllowlistCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !strings.Contains(createReq.IPBlock, "/") {
+		createReq.IPBlock = createReq.IPBlock + "/32"
+	}
+
+	_, _, err = net.ParseCIDR(createReq.IPBlock)
+	if err != nil {
+		do400(w, "invalid IP block, needs to be an IPv4 range or single IP")
+		return
+	}
+
 	db := store.GetStore()
 
-	err = db.AllowAddress(&store.Address{IP: createReq.IP, OrgID: id.Identity.OrgID})
+	err = db.AllowAddress(&store.AllowlistBlock{IPBlock: createReq.IPBlock, OrgID: id.Identity.OrgID})
 	if err != nil {
 		do500(w, "error storing address: "+err.Error())
 		return
@@ -54,15 +65,15 @@ func AllowlistDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ip := chi.URLParam(r, "address")
-	if ip == "" {
-		do400(w, "need address in path in the form `/v1/allowlist/{address}")
+	block := r.URL.Query().Get("block")
+	if block == "" {
+		do400(w, "need address in path in the form `/v1/allowlist?block={block}")
 		return
 	}
 
 	db := store.GetStore()
 
-	err := db.DenyAddress(&store.Address{IP: ip})
+	err := db.DenyAddress(&store.AllowlistBlock{IPBlock: block, OrgID: id.Identity.OrgID})
 	if err != nil {
 		if errors.Is(err, store.ErrAddressNotAllowListed) {
 			doError(w, "ip not allowlisted", 404)
@@ -94,7 +105,7 @@ func AllowlistListHandler(w http.ResponseWriter, r *http.Request) {
 	out := make([]allowListResponse, len(addrs))
 	for i, addr := range addrs {
 		out[i] = allowListResponse{
-			IP:        addr.IP,
+			IPBlock:   addr.IPBlock,
 			OrgID:     addr.OrgID,
 			CreatedAt: addr.CreatedAt,
 		}

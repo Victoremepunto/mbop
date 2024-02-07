@@ -1,12 +1,13 @@
 package store
 
 import (
+	"net"
 	"time"
 )
 
 type inMemoryStore struct {
 	db               []Registration
-	allowedAddresses []Address
+	allowedAddresses []AllowlistBlock
 }
 
 func (m *inMemoryStore) All(orgID string, _, _ int) ([]Registration, int, error) {
@@ -76,24 +77,25 @@ func (m *inMemoryStore) Delete(orgID string, uid string) error {
 	return ErrRegistrationNotFound
 }
 
-func (m *inMemoryStore) AllowedAddresses(_ string) ([]Address, error) {
+func (m *inMemoryStore) AllowedAddresses(_ string) ([]AllowlistBlock, error) {
 	return m.allowedAddresses, nil
 }
-func (m *inMemoryStore) AllowedIP(ip *Address) (bool, error) {
+func (m *inMemoryStore) AllowedIP(ip, orgID string) (bool, error) {
 	for _, addr := range m.allowedAddresses {
-		if ip.IP == addr.IP {
+		_, ipnet, _ := net.ParseCIDR(addr.IPBlock)
+		if ipnet.Contains(net.ParseIP(ip)) {
 			return true, nil
 		}
 	}
 	return false, nil
 }
-func (m *inMemoryStore) AllowAddress(ip *Address) error {
+func (m *inMemoryStore) AllowAddress(ip *AllowlistBlock) error {
 	m.allowedAddresses = append(m.allowedAddresses, *ip)
 	return nil
 }
-func (m *inMemoryStore) DenyAddress(ip *Address) error {
+func (m *inMemoryStore) DenyAddress(ip *AllowlistBlock) error {
 	for i := range m.allowedAddresses {
-		if m.allowedAddresses[i].OrgID == ip.OrgID && m.allowedAddresses[i].IP == ip.IP {
+		if m.allowedAddresses[i].OrgID == ip.OrgID && m.allowedAddresses[i].IPBlock == ip.IPBlock {
 			m.allowedAddresses = append(m.allowedAddresses[:i], m.allowedAddresses[i+1:]...)
 			return nil
 		}

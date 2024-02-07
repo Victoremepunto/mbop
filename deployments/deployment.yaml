@@ -133,6 +133,8 @@ objects:
             value: ${STORE_BACKEND}
           - name: ALLOWLIST_ENABLED
             value: ${ALLOWLIST_ENABLED}
+          - name: ALLOWLIST_HEADER
+            value: ${ALLOWLIST_HEADER}
           - name: DISABLE_CATCHALL
             value: ${DISABLE_CATCHALL}
           - name: IS_INTERNAL_LABEL
@@ -330,3 +332,6 @@ parameters:
 - name: ALLOWLIST_ENABLED
   description: whether to check registrations against the internal allowlist
   value: "false"
+- name: ALLOWLIST_HEADER
+  description: which header to pull the current ip address from
+  value: "x-forwarded-for"

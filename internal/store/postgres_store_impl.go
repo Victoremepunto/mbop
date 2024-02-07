@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"encoding/json"
+	"net"
 	"time"
 
 	// the pgx driver for the database
@@ -172,28 +173,42 @@ func scanRegistration(row scanner) (*Registration, error) {
 	}, nil
 }
 
-func (p *postgresStore) AllowedIP(ip *Address) (bool, error) {
-	res := p.db.QueryRow(`select 1
-	from allowlist
-	where ip = $1 and org_id = $2 limit 1`,
-		ip.IP, ip.OrgID)
-
-	var found int
-	err := res.Scan(&found)
+func (p *postgresStore) AllowedIP(ip string, orgID string) (bool, error) {
+	rows, err := p.db.Query(`select ip_block from allowlist where org_id = $1 or org_id = 'gateway'`, orgID)
 	if err != nil {
-		return false, nil
+		return false, err
 	}
 
-	return found == 1, nil
+	var blocks []string
+	for rows.Next() {
+		var block string
+		err := rows.Scan(&block)
+		if err != nil {
+			return false, nil
+		}
+
+		blocks = append(blocks, block)
+	}
+
+	// Loop over blocks and see if they contain the IP
+	for _, block := range blocks {
+		// ignoring the error because we sanitize them on insert
+		_, ipnet, _ := net.ParseCIDR(block)
+		if ipnet.Contains(net.ParseIP(ip)) {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
-func (p *postgresStore) AllowAddress(ip *Address) error {
-	_, err := p.db.Exec(`insert into allowlist (ip, org_id) values ($1, $2)`, ip.IP, ip.OrgID)
+func (p *postgresStore) AllowAddress(ip *AllowlistBlock) error {
+	_, err := p.db.Exec(`insert into allowlist (ip_block, org_id) values ($1, $2)`, ip.IPBlock, ip.OrgID)
 	return err
 }
 
-func (p *postgresStore) DenyAddress(ip *Address) error {
-	res, err := p.db.Exec(`delete from allowlist where ip=$1`, ip.IP)
+func (p *postgresStore) DenyAddress(ip *AllowlistBlock) error {
+	res, err := p.db.Exec(`delete from allowlist where ip_block=$1 and org_id=$2`, ip.IPBlock, ip.OrgID)
 	if err != nil {
 		return err
 	}
@@ -209,30 +224,30 @@ func (p *postgresStore) DenyAddress(ip *Address) error {
 	return nil
 }
 
-func (p *postgresStore) AllowedAddresses(orgID string) ([]Address, error) {
+func (p *postgresStore) AllowedAddresses(orgID string) ([]AllowlistBlock, error) {
 	rows, err := p.db.Query(`select
-		org_id, ip, created_at
+		org_id, ip_block, created_at
 		from allowlist
 		where org_id = $1`, orgID)
 	if err != nil {
 		return nil, err
 	}
 
-	addresses := make([]Address, 0)
+	addresses := make([]AllowlistBlock, 0)
 	for rows.Next() {
 		var (
 			orgID     string
-			address   string
+			block     string
 			createdAt time.Time
 		)
 
-		err = rows.Scan(&orgID, &address, &createdAt)
+		err = rows.Scan(&orgID, &block, &createdAt)
 		if err != nil {
 			return nil, err
 		}
 
-		addresses = append(addresses, Address{
-			IP:        address,
+		addresses = append(addresses, AllowlistBlock{
+			IPBlock:   block,
 			OrgID:     orgID,
 			CreatedAt: createdAt,
 		})

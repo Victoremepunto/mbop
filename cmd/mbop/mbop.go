@@ -55,7 +55,7 @@ func main() {
 
 		r.Get("/v1/allowlist", handlers.AllowlistListHandler)
 		r.Post("/v1/allowlist", handlers.AllowlistCreateHandler)
-		r.Delete("/v1/allowlist/{address}", handlers.AllowlistDeleteHandler)
+		r.Delete("/v1/allowlist", handlers.AllowlistDeleteHandler)
 	})
 
 	err := mailer.InitConfig()

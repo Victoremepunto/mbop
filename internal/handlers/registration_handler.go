@@ -82,10 +82,7 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 	db := store.GetStore()
 
 	if config.Get().AllowlistEnabled {
-		allowed, err := db.AllowedIP(&store.Address{
-			IP:    r.Header.Get("x-forwarded-for"),
-			OrgID: id.Identity.OrgID,
-		})
+		allowed, err := db.AllowedIP(r.Header.Get(config.Get().AllowlistHeader), id.Identity.OrgID)
 		if err != nil {
 			do500(w, "error listing ip addresses: "+err.Error())
 			return
