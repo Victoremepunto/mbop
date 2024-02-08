@@ -66,9 +66,9 @@ func (p *postgresStore) FindByUID(uid string) (*Registration, error) {
 
 func (p *postgresStore) Create(r *Registration) (string, error) {
 	res := p.db.QueryRow(
-		`insert into registrations 
-		(org_id, username, uid, display_name, extra) 
-		values ($1, $2, $3, $4, $5) 
+		`insert into registrations
+		(org_id, username, uid, display_name, extra)
+		values ($1, $2, $3, $4, $5)
 		returning id`,
 		r.OrgID,
 		r.Username,
@@ -170,4 +170,74 @@ func scanRegistration(row scanner) (*Registration, error) {
 		Extra:       e,
 		CreatedAt:   createdAt,
 	}, nil
+}
+
+func (p *postgresStore) AllowedIP(ip string, orgID string) (bool, error) {
+	// turns out postgres can do this on the backend! see old code that accomplishes the same thing at commit dca8f2c
+
+	// basically its doing a subquery selecting all blocks from the org or
+	// gateway and then shoving them into an array and checking if the ip exists
+	// in those blocks.
+	row := p.db.QueryRow(`select $1::inet << any(array(select ip_block from allowlist where org_id = $2)::inet[])`, ip, orgID)
+
+	var valid bool
+	err := row.Scan(&valid)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return false, err
+	}
+
+	return valid, nil
+}
+
+func (p *postgresStore) AllowAddress(ip *AllowlistBlock) error {
+	_, err := p.db.Exec(`insert into allowlist (ip_block, org_id) values ($1, $2)`, ip.IPBlock, ip.OrgID)
+	return err
+}
+
+func (p *postgresStore) DenyAddress(ip *AllowlistBlock) error {
+	res, err := p.db.Exec(`delete from allowlist where ip_block=$1 and org_id=$2`, ip.IPBlock, ip.OrgID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return ErrAddressNotAllowListed
+	}
+
+	return nil
+}
+
+func (p *postgresStore) AllowedAddresses(orgID string) ([]AllowlistBlock, error) {
+	rows, err := p.db.Query(`select
+		org_id, ip_block, created_at
+		from allowlist
+		where org_id = $1`, orgID)
+	if err != nil {
+		return nil, err
+	}
+
+	addresses := make([]AllowlistBlock, 0)
+	for rows.Next() {
+		var (
+			orgID     string
+			block     string
+			createdAt time.Time
+		)
+
+		err = rows.Scan(&orgID, &block, &createdAt)
+		if err != nil {
+			return nil, err
+		}
+
+		addresses = append(addresses, AllowlistBlock{
+			IPBlock:   block,
+			OrgID:     orgID,
+			CreatedAt: createdAt,
+		})
+	}
+	return addresses, nil
 }

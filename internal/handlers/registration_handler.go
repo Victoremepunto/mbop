@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/redhatinsights/mbop/internal/config"
 	"github.com/redhatinsights/mbop/internal/store"
 	"github.com/redhatinsights/platform-go-middlewares/identity"
 )
@@ -77,6 +78,21 @@ func RegistrationListHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
+	id := identity.Get(r.Context())
+	db := store.GetStore()
+
+	if config.Get().AllowlistEnabled {
+		allowed, err := db.AllowedIP(r.Header.Get(config.Get().AllowlistHeader), id.Identity.OrgID)
+		if err != nil {
+			do500(w, "error listing ip addresses: "+err.Error())
+			return
+		}
+		if !allowed {
+			doError(w, "address is not allowlisted", 403)
+			return
+		}
+	}
+
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		do500(w, "failed to read body bytes: "+err.Error())
@@ -100,7 +116,6 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := identity.Get(r.Context())
 	if !id.Identity.User.OrgAdmin {
 		doError(w, "user must be org admin to register satellite", 403)
 		return
@@ -121,7 +136,6 @@ func RegistrationCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := store.GetStore()
 	_, err = db.Create(&store.Registration{
 		OrgID:       id.Identity.OrgID,
 		Username:    id.Identity.User.Username,

@@ -131,6 +131,10 @@ objects:
             value: ${TOKEN_TTL_DURATION}
           - name: STORE_BACKEND
             value: ${STORE_BACKEND}
+          - name: ALLOWLIST_ENABLED
+            value: ${ALLOWLIST_ENABLED}
+          - name: ALLOWLIST_HEADER
+            value: ${ALLOWLIST_HEADER}
           - name: DISABLE_CATCHALL
             value: ${DISABLE_CATCHALL}
           - name: IS_INTERNAL_LABEL
@@ -325,3 +329,9 @@ parameters:
 - name: CERT_DIR
   description: the base directory where ssl certs are stored
   value: "/certs"
+- name: ALLOWLIST_ENABLED
+  description: whether to check registrations against the internal allowlist
+  value: "false"
+- name: ALLOWLIST_HEADER
+  description: which header to pull the current ip address from
+  value: "x-forwarded-for"

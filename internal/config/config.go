@@ -40,6 +40,8 @@ type MbopConfig struct {
 	KeyCloakTokenGrantType     string
 	KeyCloakTokenClientID      string
 
+	AllowlistEnabled bool
+	AllowlistHeader  string
 	StoreBackend     string
 	DatabaseHost     string
 	DatabasePort     string
@@ -61,6 +63,7 @@ func Get() *MbopConfig {
 	}
 
 	disableCatchAll, _ := strconv.ParseBool(fetchWithDefault("DISABLE_CATCHALL", "false"))
+	allowlistEnabled, _ := strconv.ParseBool(fetchWithDefault("ALLOWLIST_ENABLED", "false"))
 	debug, _ := strconv.ParseBool(fetchWithDefault("DEBUG", "false"))
 	certDir := fetchWithDefault("CERT_DIR", "/certs")
 	keyCloakTimeout, _ := strconv.ParseInt(fetchWithDefault("KEYCLOAK_TIMEOUT", "60"), 0, 64)
@@ -90,6 +93,8 @@ func Get() *MbopConfig {
 		DatabasePassword: fetchWithDefault("DATABASE_PASSWORD", ""),
 		DatabaseName:     fetchWithDefault("DATABASE_NAME", "mbop"),
 		StoreBackend:     fetchWithDefault("STORE_BACKEND", "memory"),
+		AllowlistEnabled: allowlistEnabled,
+		AllowlistHeader:  fetchWithDefault("ALLOWLIST_HEADER", "x-forwarded-for"),
 
 		CognitoAppClientID:     fetchWithDefault("COGNITO_APP_CLIENT_ID", ""),
 		CognitoAppClientSecret: fetchWithDefault("COGNITO_APP_CLIENT_SECRET", ""),
