@@ -35,7 +35,7 @@ func (suite *TestSuite) SetupSuite() {
 }
 
 func (suite *TestSuite) TestAwsJWTGetNoKid() {
-	suite.mockServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	suite.mockServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(suite.testData)
 	}))
@@ -63,7 +63,7 @@ func (suite *TestSuite) TestAwsJWTGetNoKid() {
 }
 
 func (suite *TestSuite) TestAwsJWTGetNoKidMatch() {
-	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(suite.testData)
 	}))
@@ -92,7 +92,7 @@ func (suite *TestSuite) TestAwsJWTGetNoKidMatch() {
 }
 
 func (suite *TestSuite) TestAwsJWTGetKidMatch() {
-	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(suite.testData)
 	}))
