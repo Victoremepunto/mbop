@@ -68,7 +68,7 @@ podman run -it --name keycloak -p 8080:8080 \
     -e KEYCLOAK_ADMIN_PASSWORD=change_me \
     -e KEYCLOAK_IMPORT=/opt/keycloak/data/import/redhat-external-realm.json \
     -v ${PWD}/data/redhat-external-realm.json:/opt/keycloak/data/import/redhat-external-realm.json:z \
-    quay.io/keycloak/keycloak:15:0.2
+    quay.io/keycloak/keycloak:15.0.2
 ```
 
 Then run MBOP, either building and running it locally:
